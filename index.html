@@ -1927,8 +1927,26 @@ function insertToken(t){ if(lastFC){ const s=lastFC.selectionStart,e=lastFC.sele
 function updateEmptyPreview(){
   const msg=document.getElementById('emptyMsg').value||'Brak danych dla wybranych kryteriów.';
   const hint=document.getElementById('emptyHint').value||'Zmień filtry i spróbuj ponownie.';
-  const ico=document.getElementById('emptyIcon').value||'bi-inbox';
-  document.getElementById('emptyPreview').innerHTML=`<span class="es-icon"><i class="bi ${ico}"></i></span><div class="es-title">${msg}</div><div class="es-sub">${hint}</div>`;
+  const icoRaw=document.getElementById('emptyIcon').value||'bi-inbox';
+  const ico = /^bi-[a-z0-9-]+$/i.test(icoRaw) ? icoRaw : 'bi-inbox';
+  const preview = document.getElementById('emptyPreview');
+  preview.innerHTML = '';
+
+  const iconWrap = document.createElement('span');
+  iconWrap.className = 'es-icon';
+  const icon = document.createElement('i');
+  icon.className = `bi ${ico}`;
+  iconWrap.appendChild(icon);
+
+  const title = document.createElement('div');
+  title.className = 'es-title';
+  title.textContent = msg;
+
+  const sub = document.createElement('div');
+  sub.className = 'es-sub';
+  sub.textContent = hint;
+
+  preview.append(iconWrap, title, sub);
 }
 
 // ── FIELD CHANGE → UPDATE INDICATORS ──
@@ -1941,6 +1959,15 @@ function onFieldChange(el){
 
 let updateTimer = null;
 function scheduleUpdate(){ clearTimeout(updateTimer); updateTimer = setTimeout(updateAll, 150); }
+
+function escapeHtml(value){
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ── COMPUTE TAB COMPLETION ──
 function countFilledInputs(pane){
@@ -2080,7 +2107,6 @@ function buildSummaryPanel(tabData, pct){
   // Details
   const rName = (document.getElementById('rName')||{}).value||'';
   const rTitle = (document.getElementById('rTitle')||{}).value||'';
-  const rDesc = (document.getElementById('rDesc')||{}).value||'';
   const rStatus = (document.getElementById('rStatus')||{}).value||'Szkic';
   const sqlType = (document.getElementById('sqlType')||{}).value||'';
   const cols = document.getElementById('colBody').rows.length;
@@ -2090,11 +2116,15 @@ function buildSummaryPanel(tabData, pct){
   const activeFmts = document.querySelectorAll('.fmt-cb:checked').length;
 
   const sqlLabels={view:'Widok (VIEW)',proc:'SP',fn:'TVF',query:'SQL inline','':'—'};
+  const safeRName = escapeHtml(rName || '(nie podano)');
+  const safeRTitle = escapeHtml(rTitle || '(nie podano)');
+  const safeRStatus = escapeHtml(rStatus);
+  const safeSqlLabel = escapeHtml(sqlLabels[sqlType] || '—');
 
   document.getElementById('sumDetails').innerHTML = `
-    <div class="sum-detail"><div class="sum-detail-label">Nazwa raportu</div><div class="sum-detail-val ${!rName?'empty':''}">${rName||'(nie podano)'}</div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Tytuł wyświetlany</div><div class="sum-detail-val ${!rTitle?'empty':''}">${rTitle||'(nie podano)'}</div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Status · Źródło SQL</div><div class="sum-detail-val"><span class="sum-badge blue">${rStatus}</span> <span class="sum-badge ${sqlType?'green':'yellow'}">${sqlLabels[sqlType]}</span></div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Nazwa raportu</div><div class="sum-detail-val ${!rName?'empty':''}">${safeRName}</div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Tytuł wyświetlany</div><div class="sum-detail-val ${!rTitle?'empty':''}">${safeRTitle}</div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Status · Źródło SQL</div><div class="sum-detail-val"><span class="sum-badge blue">${safeRStatus}</span> <span class="sum-badge ${sqlType?'green':'yellow'}">${safeSqlLabel}</span></div></div>
     <div class="sum-detail"><div class="sum-detail-label">Kolumny · Parametry · Grupy · SR</div><div class="sum-detail-val">${cols} · ${params} · ${groups} · ${srs}</div></div>
     <div class="sum-detail"><div class="sum-detail-label">Aktywne formaty eksportu</div><div class="sum-detail-val">${activeFmts} aktywnych</div></div>
   `;
@@ -2224,7 +2254,10 @@ function showToast(msg, type=''){
   const c=document.getElementById('toastContainer');
   const t=document.createElement('div');
   t.className=`toast ${type}`;
-  t.innerHTML=`<i class="bi bi-${type==='success'?'check-circle':type==='warning'?'exclamation-triangle':'info-circle'}"></i>${msg}`;
+  const icon=document.createElement('i');
+  icon.className=`bi bi-${type==='success'?'check-circle':type==='warning'?'exclamation-triangle':'info-circle'}`;
+  t.appendChild(icon);
+  t.append(document.createTextNode(msg));
   c.appendChild(t);
   setTimeout(()=>{ t.classList.add('removing'); setTimeout(()=>t.remove(),250); }, 2500);
 }
