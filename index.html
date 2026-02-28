@@ -1629,16 +1629,16 @@ select.fs option{background:#fff;}
 <script>
 // ── GLOBAL STATE ──
 const TABS = [
-  {id:'t1',name:'Informacje ogólne',required:['rName','rTitle','rDesc']},
-  {id:'t2',name:'Źródło SQL',required:['sqlType']},
-  {id:'t3',name:'Kolumny',required:[]},
-  {id:'t4',name:'Parametry',required:[]},
-  {id:'t5',name:'Filtry',required:[]},
-  {id:'t6',name:'Grupowanie',required:[]},
-  {id:'t7',name:'Podraporty',required:[]},
-  {id:'t8',name:'Nagłówki/Stopki',required:['rhTitle']},
-  {id:'t9',name:'Brak danych',required:['emptyMsg']},
-  {id:'t10',name:'Opcje wyjścia',required:[]},
+  {id:'t1',name:'Informacje ogólne',required:['rName','rTitle','rDesc'],completionCheck:'required'},
+  {id:'t2',name:'Źródło SQL',required:['sqlType'],completionCheck:'required'},
+  {id:'t3',name:'Kolumny',required:[],completionCheck:'columns'},
+  {id:'t4',name:'Parametry',required:[],completionCheck:'params'},
+  {id:'t5',name:'Filtry',required:[],completionCheck:'filters'},
+  {id:'t6',name:'Grupowanie',required:[],completionCheck:'groups'},
+  {id:'t7',name:'Podraporty',required:[],completionCheck:'subreports'},
+  {id:'t8',name:'Nagłówki/Stopki',required:['rhTitle'],completionCheck:'required'},
+  {id:'t9',name:'Brak danych',required:['emptyMsg'],completionCheck:'required'},
+  {id:'t10',name:'Opcje wyjścia',required:[],completionCheck:'exports'},
 ];
 const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
@@ -1828,8 +1828,18 @@ let updateTimer = null;
 function scheduleUpdate(){ clearTimeout(updateTimer); updateTimer = setTimeout(updateAll, 150); }
 
 // ── COMPUTE TAB COMPLETION ──
-function computeTabStatus(tab){
-  const pane = document.getElementById(tab.id);
+function countFilledInputs(pane){
+  if(!pane) return 0;
+  const allInputs = pane.querySelectorAll('input[type=text]:not([type=hidden]),textarea,select');
+  let count = 0;
+  allInputs.forEach(el=>{
+    const v = (el.value || '').trim();
+    if(v && v !== '—' && v !== '— wybierz —' && v !== '— wybierz typ —') count++;
+  });
+  return count;
+}
+
+function completionFromRequired(tab, pane){
   const required = tab.required;
   let filled = 0, total = required.length;
 
@@ -1838,38 +1848,82 @@ function computeTabStatus(tab){
     if(el && el.value.trim().length > 0) filled++;
   });
 
-  // Count non-required inputs that are filled (for partial indicator)
-  const allInputs = pane.querySelectorAll('input[type=text]:not([type=hidden]),textarea,select');
-  let anyFilled = 0;
-  allInputs.forEach(el=>{
-    const v = el.value.trim();
-    if(v && v !== '—' && v !== '— wybierz —' && v !== '' && v !== '— wybierz typ —') anyFilled++;
-  });
+  const anyFilled = countFilledInputs(pane);
 
   if(total === 0){
-    // No required fields — use anyFilled
-    if(anyFilled === 0) return 'none';
-    return 'partial'; // treat optional tabs as partial until saved
+    if(anyFilled === 0) return {status:'none', progress:0};
+    return {status:'partial', progress:50};
   }
-  if(filled === 0 && anyFilled === 0) return 'none';
-  if(filled < total) return 'partial';
-  return 'complete';
+  if(filled === 0 && anyFilled === 0) return {status:'none', progress:0};
+  if(filled < total) return {status:'partial', progress:Math.round((filled/total)*100)};
+  return {status:'complete', progress:100};
+}
+
+function completionFromStructure({ready, touched}){
+  if(ready) return {status:'complete', progress:100};
+  if(touched) return {status:'partial', progress:50};
+  return {status:'none', progress:0};
+}
+
+const COMPLETION_CHECKS = {
+  required: completionFromRequired,
+  columns: (tab, pane)=> completionFromStructure({
+    ready: document.getElementById('colBody').rows.length >= 1,
+    touched: countFilledInputs(pane) > 0
+  }),
+  params: (tab, pane)=> completionFromStructure({
+    ready: document.getElementById('paramBody').rows.length >= 1,
+    touched: countFilledInputs(pane) > 0
+  }),
+  filters: (tab, pane)=> {
+    const groups = document.querySelectorAll('#filterGroups .cond-group').length;
+    const filledFilterValues = Array.from(document.querySelectorAll('#filterGroups .filter-rows input[type=text]')).filter(el=>(el.value||'').trim().length>0).length;
+    return completionFromStructure({
+      ready: groups >= 1 && filledFilterValues >= 1,
+      touched: countFilledInputs(pane) > 0 || groups > 0
+    });
+  },
+  groups: (tab, pane)=> completionFromStructure({
+    ready: document.getElementById('groupBody').rows.length >= 1,
+    touched: countFilledInputs(pane) > 0
+  }),
+  subreports: (tab, pane)=> completionFromStructure({
+    ready: document.querySelectorAll('.sr-card').length >= 1,
+    touched: countFilledInputs(pane) > 0
+  }),
+  exports: (tab, pane)=> completionFromStructure({
+    ready: document.querySelectorAll('.fmt-cb:checked').length >= 1,
+    touched: countFilledInputs(pane) > 0
+  })
+};
+
+function computeTabCompletion(tab){
+  const pane = document.getElementById(tab.id);
+  const checker = tab.completionCheck;
+  if(typeof checker === 'function') return checker(tab, pane);
+  if(typeof checker === 'string' && COMPLETION_CHECKS[checker]) return COMPLETION_CHECKS[checker](tab, pane);
+  return completionFromRequired(tab, pane);
+}
+
+function computeTabStatus(tab){
+  return computeTabCompletion(tab).status;
 }
 
 function updateAll(){
-  let totalComplete = 0;
+  let progressSum = 0;
   const tabData = [];
   TABS.forEach(tab=>{
-    const status = computeTabStatus(tab);
+    const completion = computeTabCompletion(tab);
+    const status = completion.status;
     const dot = document.getElementById(`ts-${tab.id}`);
     if(dot){
       dot.className = `tab-status ${status}`;
     }
-    tabData.push({...tab, status});
-    if(status==='complete') totalComplete++;
+    tabData.push({...tab, ...completion});
+    progressSum += completion.progress;
   });
 
-  const pct = Math.round((totalComplete/TABS.length)*100);
+  const pct = Math.round(progressSum/TABS.length);
   document.getElementById('globalProgressFill').style.width = pct+'%';
   document.getElementById('progressLabel').textContent = pct+'% gotowe';
 
@@ -1891,8 +1945,8 @@ function updateAll(){
 // ── BUILD SUMMARY PANEL ──
 function buildSummaryPanel(tabData, pct){
   if(!tabData){
-    tabData = TABS.map(t=>({...t, status: computeTabStatus(t)}));
-    pct = Math.round(tabData.filter(t=>t.status==='complete').length/TABS.length*100);
+    tabData = TABS.map(t=>({...t, ...computeTabCompletion(t)}));
+    pct = Math.round(tabData.reduce((acc,t)=>acc+t.progress,0)/TABS.length);
   }
 
   // Tab list
@@ -1900,7 +1954,7 @@ function buildSummaryPanel(tabData, pct){
   tl.innerHTML = tabData.map((t,i)=>{
     const icoClass = t.status==='complete'?'sum-ico-g':t.status==='partial'?'sum-ico-y':'sum-ico-n';
     const icoI = t.status==='complete'?'bi-check':'bi-dash';
-    const pctTxt = t.status==='complete'?'100%':t.status==='partial'?'~%':'0%';
+    const pctTxt = `${t.progress}%`;
     return `<div class="sum-tab-row" onclick="goTab('${t.id}')">
       <div class="tab-ico sum-tab-ico ${icoClass}"><i class="bi ${icoI}"></i></div>
       <span class="sum-tab-name">${t.name}</span>
