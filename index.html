@@ -536,6 +536,12 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
 .field-hint{font-size:11.5px;color:var(--muted);line-height:1.5;display:flex;align-items:flex-start;gap:5px;}
 .field-hint i{color:var(--a);flex-shrink:0;margin-top:1px;}
+.fc.validation-error,.fs.validation-error{border-color:#dc2626;background:#fef2f2;}
+.fc.validation-error:focus,.fs.validation-error:focus{box-shadow:0 0 0 3px rgba(220,38,38,.14);}
+.field-validation-message{display:none;margin-top:6px;font-size:11.5px;color:#b91c1c;line-height:1.45;}
+.field-validation-message.visible{display:block;}
+.sum-alert-list{margin:0;padding-left:18px;}
+.sum-alert-list li{margin-bottom:3px;}
 
 /* ══════════ RADIO PILLS ══════════ */
 .radio-group{display:flex;flex-wrap:wrap;gap:6px;}
@@ -912,7 +918,8 @@ select.fs option{background:#fff;}
 
   <!-- ═══ MAIN ═══ -->
   <main class="main">
-    <div class="tab-content">
+    <form id="reportDefinitionForm">
+      <div class="tab-content">
 
       <!-- ══ TAB 1 ══ -->
       <div class="tab-pane active" id="t1">
@@ -935,14 +942,14 @@ select.fs option{background:#fff;}
                 <label class="field-label">Nazwa raportu <span class="req-star">*</span>
                   <i class="tip-btn">?<span class="tip-popup">Unikalna techniczna nazwa w systemie. Używana jako identyfikator w C# przy ładowaniu .rpt. Bez spacji — użyj camelCase lub podkreśleń.</span></i>
                 </label>
-                <input type="text" class="fc" id="rName" placeholder="np. RaportSprzedazyMiesiecznej" oninput="onFieldChange(this)"/>
+                <input type="text" class="fc" id="rName" placeholder="np. RaportSprzedazyMiesiecznej" required minlength="3" pattern="[A-Za-z0-9_]+" title="Użyj tylko liter, cyfr i podkreśleń (bez spacji)." oninput="onFieldChange(this)"/>
                 <div class="field-hint"><i class="bi bi-info-circle"></i>Nazwa pliku .rpt i identyfikator w kodzie</div>
               </div>
               <div class="field">
                 <label class="field-label">Tytuł wyświetlany <span class="req-star">*</span>
                   <i class="tip-btn">?<span class="tip-popup">Tekst widoczny dla użytkownika na wydruku. Może zawierać tokeny CR np. {?Miesiąc} zastępowane dynamicznie.</span></i>
                 </label>
-                <input type="text" class="fc" id="rTitle" placeholder="np. RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" oninput="onFieldChange(this)"/>
+                <input type="text" class="fc" id="rTitle" placeholder="np. RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" required minlength="5" oninput="onFieldChange(this)"/>
               </div>
             </div>
             <div class="form-row cols-3">
@@ -971,7 +978,7 @@ select.fs option{background:#fff;}
                 <label class="field-label">Opis / cel raportu <span class="req-star">*</span>
                   <i class="tip-btn">?<span class="tip-popup">Opisz: dla kogo jest raport, jakie decyzje biznesowe wspiera, jakie dane prezentuje i jak często jest generowany. Trafi do dokumentacji technicznej.</span></i>
                 </label>
-                <textarea class="fc" id="rDesc" placeholder="Opisz przeznaczenie raportu, grupę docelową użytkowników, jakie decyzje biznesowe wspiera oraz jak często będzie generowany..." oninput="onFieldChange(this)"></textarea>
+                <textarea class="fc" id="rDesc" placeholder="Opisz przeznaczenie raportu, grupę docelową użytkowników, jakie decyzje biznesowe wspiera oraz jak często będzie generowany..." required minlength="20" oninput="onFieldChange(this)"></textarea>
               </div>
             </div>
           </div>
@@ -1021,7 +1028,7 @@ select.fs option{background:#fff;}
                 <label class="field-label">Typ źródła SQL <span class="req-star">*</span>
                   <i class="tip-btn">?<span class="tip-popup">VIEW = ukrywa SQL przed CR (zalecane). SP = parametryzacja po stronie bazy. Command Object = inline SQL bezpośrednio w CR.</span></i>
                 </label>
-                <select class="fs" id="sqlType" onchange="toggleSqlFields();onFieldChange(this)">
+                <select class="fs" id="sqlType" required onchange="toggleSqlFields();onFieldChange(this)">
                   <option value="">— wybierz typ —</option>
                   <option value="view">Widok (VIEW)</option>
                   <option value="proc">Procedura składowana (SP)</option>
@@ -1476,7 +1483,7 @@ select.fs option{background:#fff;}
                 <div class="fmt-ico fmt-pdf"><i class="bi bi-filetype-pdf"></i></div>
                 <span class="fmt-name">PDF</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
-                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" id="fmtPdfEnabled" type="checkbox" checked onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
@@ -1488,7 +1495,7 @@ select.fs option{background:#fff;}
                   <div class="field"><label class="field-label">Marginesy G/P/D/L (mm) <i class="tip-btn">?<span class="tip-popup">CR: File → Page Setup → Margins. Standard: 10/10/10/10.</span></i></label><input type="text" class="fc" placeholder="10/10/10/10"/></div>
                   <div class="field"><label class="field-label">Wersja PDF <i class="tip-btn">?<span class="tip-popup">PDF/A-1b = standard archiwizacyjny wymagany w administracji publicznej. Wymaga osadzenia czcionek.</span></i></label><select class="fs"><option>PDF 1.4 (domyślny CR)</option><option>PDF/A-1b (archiwizacja)</option><option>PDF/A-2</option></select></div>
                   <div class="field"><label class="field-label">DPI <i class="tip-btn">?<span class="tip-popup">96=ekran, 300=druk, 600=druk profesjonalny. Dla tekstowych raportów 150 DPI wystarczy.</span></i></label><select class="fs"><option>96 DPI</option><option>150 DPI</option><option>300 DPI</option><option>600 DPI</option></select></div>
-                  <div class="field"><label class="field-label">Wzorzec nazwy <i class="tip-btn">?<span class="tip-popup">Programista interpoluje tokeny w C# przed ExportToStream.</span></i></label><input type="text" class="fc mono" placeholder="Raport_{?Miesiąc}_{PrintDate}.pdf"/></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy <i class="tip-btn">?<span class="tip-popup">Programista interpoluje tokeny w C# przed ExportToStream.</span></i></label><input type="text" class="fc mono" id="pdfFilePattern" placeholder="Raport_{?Miesiąc}_{PrintDate}.pdf" minlength="5" pattern=".*\.pdf$" oninput="onFieldChange(this)"/></div>
                 </div>
               </div>
             </div>
@@ -1498,7 +1505,7 @@ select.fs option{background:#fff;}
                 <div class="fmt-ico fmt-xls"><i class="bi bi-filetype-xlsx"></i></div>
                 <span class="fmt-name">Excel (.xlsx)</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
-                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" id="fmtExcelEnabled" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
@@ -1507,7 +1514,7 @@ select.fs option{background:#fff;}
                 <div class="form-row auto">
                   <div class="field"><label class="field-label">Format Excel <i class="tip-btn">?<span class="tip-popup">Data Only = surowe dane bez formatowania CR — lepsza edytowalność w Excel.</span></i></label><select class="fs"><option>XLSX</option><option>XLSX Data Only</option><option>XLS</option></select></div>
                   <div class="field"><label class="field-label">Arkusz</label><input type="text" class="fc" placeholder="Dane lub {?Miesiąc}"/></div>
-                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport_{PrintDate}.xlsx"/></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" id="excelFilePattern" placeholder="Raport_{PrintDate}.xlsx" minlength="5" pattern=".*\.xlsx?$" oninput="onFieldChange(this)"/></div>
                 </div>
                 <div class="form-row cols-3" style="margin-top:10px">
                   <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">AutoFilter <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">Rozwijane filtry Excel. Implementacja przez EPPlus/ClosedXML po eksporcie CR.</span></i></span></div>
@@ -1521,7 +1528,7 @@ select.fs option{background:#fff;}
                 <div class="fmt-ico fmt-csv"><i class="bi bi-filetype-csv"></i></div>
                 <span class="fmt-name">CSV / Tekst</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
-                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" id="fmtCsvEnabled" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
@@ -1531,7 +1538,7 @@ select.fs option{background:#fff;}
                   <div class="field"><label class="field-label">Separator <i class="tip-btn">?<span class="tip-popup">Średnik (;) = standard PL Excel. Przecinek (,) = EN. Tabulator dla legacy.</span></i></label><select class="fs"><option>Średnik (;)</option><option>Przecinek (,)</option><option>Tabulator (\t)</option><option>Pionowa kreska (|)</option></select></div>
                   <div class="field"><label class="field-label">Encoding <i class="tip-btn">?<span class="tip-popup">UTF-8 BOM = zalecane dla polskich znaków w Excel. BOM = Excel wykrywa kodowanie automatycznie.</span></i></label><select class="fs"><option>UTF-8 BOM</option><option>UTF-8</option><option>Windows-1250</option></select></div>
                   <div class="field"><label class="field-label">Format daty</label><input type="text" class="fc" placeholder="yyyy-MM-dd"/></div>
-                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport_{PrintDate}.csv"/></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" id="csvFilePattern" placeholder="Raport_{PrintDate}.csv" minlength="5" pattern=".*\.csv$" oninput="onFieldChange(this)"/></div>
                 </div>
               </div>
             </div>
@@ -1547,7 +1554,7 @@ select.fs option{background:#fff;}
           </div>
           <div class="card-body">
             <div class="form-row cols-3">
-              <div class="field"><label class="field-label">Domyślny format</label><select class="fs" onchange="onFieldChange(this)"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
+              <div class="field"><label class="field-label">Domyślny format <span class="req-star">*</span></label><select class="fs" id="defaultExportFormat" required onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
               <div class="field"><label class="field-label">Widoczność <i class="tip-btn">?<span class="tip-popup">Podgląd = CrystalReportViewer w Razor Page. Tylko eksport = bezpośrednie pobranie bez podglądu.</span></i></label><select class="fs"><option>Podgląd w przeglądarce</option><option>Tylko eksport</option><option>Oba tryby</option></select></div>
               <div class="field"><label class="field-label">Harmonogram <i class="tip-btn">?<span class="tip-popup">Automatyczne generowanie. Wymaga Hangfire, Quartz.NET lub Windows Scheduler.</span></i></label><select class="fs"><option>Na żądanie</option><option>Codziennie</option><option>Co tydzień</option><option>Ostatni dzień miesiąca</option><option>Niestandardowy (CRON)</option></select></div>
             </div>
@@ -1560,7 +1567,8 @@ select.fs option{background:#fff;}
         </div>
       </div>
 
-    </div><!-- end .tab-content -->
+      </div><!-- end .tab-content -->
+    </form>
   </main>
 
   <!-- ═══ SUMMARY PANEL ═══ -->
@@ -1800,7 +1808,7 @@ function toggleFmt(head){
 }
 function addFmtCard(){
   const fmt=prompt('Nazwa formatu:'); if(!fmt) return;
-  document.getElementById('fmtContainer').insertAdjacentHTML('beforeend',`<div class="fmt-card mt-2"><div class="fmt-head" onclick="toggleFmt(this)"><div class="fmt-ico" style="background:var(--a-l);color:var(--a)"><i class="bi bi-file-earmark"></i></div><span class="fmt-name">${fmt}</span><div style="margin-left:auto" onclick="event.stopPropagation()"><label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label></div><i class="bi bi-chevron-down fmt-chevron ms-2"></i></div><div class="fmt-body open"><div class="form-row cols-2"><div class="field"><label class="field-label">Typ eksportu CR</label><input type="text" class="fc mono" placeholder="ExportFormatType.HTML40"/></div><div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport.html"/></div></div><div class="field mt-2"><label class="field-label">Wytyczne dewelopera</label><textarea class="fc" rows="2" placeholder="Opisz wymagania..."></textarea></div></div></div>`);
+  document.getElementById('fmtContainer').insertAdjacentHTML('beforeend',`<div class="fmt-card mt-2"><div class="fmt-head" onclick="toggleFmt(this)"><div class="fmt-ico" style="background:var(--a-l);color:var(--a)"><i class="bi bi-file-earmark"></i></div><span class="fmt-name">${fmt}</span><div style="margin-left:auto" onclick="event.stopPropagation()"><label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label></div><i class="bi bi-chevron-down fmt-chevron ms-2"></i></div><div class="fmt-body open"><div class="form-row cols-2"><div class="field"><label class="field-label">Typ eksportu CR</label><input type="text" class="fc mono" placeholder="ExportFormatType.HTML40"/></div><div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport.html"/></div></div><div class="field mt-2"><label class="field-label">Wytyczne dewelopera</label><textarea class="fc" rows="2" placeholder="Opisz wymagania..."></textarea></div></div></div>`);
 }
 
 // ── TOKENS ──
@@ -1931,19 +1939,123 @@ function buildSummaryPanel(tabData, pct){
   `;
 
   // Alerts
-  const missing = [];
-  if(!rName) missing.push('Brak nazwy raportu');
-  if(!rTitle) missing.push('Brak tytułu wyświetlanego');
-  if(!sqlType) missing.push('Nie wybrano typu źródła SQL');
-  if(cols===0) missing.push('Brak zdefiniowanych kolumn');
-  if(activeFmts===0) missing.push('Brak aktywnego formatu eksportu');
+  const validationErrors = getValidationErrors();
+  renderValidationSummary(validationErrors);
+}
 
-  const alertsEl = document.getElementById('sumAlerts');
-  if(missing.length){
-    alertsEl.innerHTML = missing.map(m=>`<div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i>${m}</div>`).join('');
-  } else {
-    alertsEl.innerHTML = `<div class="sum-alert ok"><i class="bi bi-check-circle"></i>Definicja raportu jest kompletna!</div>`;
+// ── VALIDATION ──
+const VALIDATION_CONFIG = [
+  {id:'rName', tab:'t1', label:'Nazwa raportu'},
+  {id:'rTitle', tab:'t1', label:'Tytuł wyświetlany'},
+  {id:'rDesc', tab:'t1', label:'Opis / cel raportu'},
+  {id:'sqlType', tab:'t2', label:'Typ źródła SQL'},
+  {id:'defaultExportFormat', tab:'t10', label:'Domyślny format eksportu'}
+];
+
+function clearValidationErrors(){
+  document.querySelectorAll('.validation-error').forEach(el=>el.classList.remove('validation-error'));
+  document.querySelectorAll('.field-validation-message').forEach(el=>{
+    el.textContent = '';
+    el.classList.remove('visible');
+  });
+}
+
+function showFieldError(fieldId, message){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+  el.classList.add('validation-error');
+  const fieldWrap = el.closest('.field') || el.parentElement;
+  if(!fieldWrap) return;
+  let msgEl = fieldWrap.querySelector('.field-validation-message');
+  if(!msgEl){
+    msgEl = document.createElement('div');
+    msgEl.className = 'field-validation-message';
+    fieldWrap.appendChild(msgEl);
   }
+  msgEl.textContent = message;
+  msgEl.classList.add('visible');
+}
+
+function getValidationErrors(){
+  const errors = [];
+  VALIDATION_CONFIG.forEach(cfg=>{
+    const el = document.getElementById(cfg.id);
+    if(!el) return;
+    if(!el.checkValidity()){
+      let message = el.validationMessage || `Pole "${cfg.label}" jest nieprawidłowe.`;
+      if(cfg.id === 'rName'){
+        if(el.validity.valueMissing) message = 'Nazwa raportu jest wymagana.';
+        else if(el.validity.tooShort) message = 'Nazwa raportu musi mieć min. 3 znaki.';
+        else if(el.validity.patternMismatch) message = 'Nazwa raportu może zawierać tylko litery, cyfry i podkreślenia (bez spacji).';
+      }
+      if(cfg.id === 'rTitle' && el.validity.valueMissing) message = 'Tytuł wyświetlany jest wymagany.';
+      if(cfg.id === 'rDesc'){
+        if(el.validity.valueMissing) message = 'Opis / cel raportu jest wymagany.';
+        else if(el.validity.tooShort) message = 'Opis raportu musi mieć co najmniej 20 znaków.';
+      }
+      if(cfg.id === 'sqlType' && el.validity.valueMissing) message = 'Wybierz typ źródła SQL.';
+      if(cfg.id === 'defaultExportFormat' && el.validity.valueMissing) message = 'Wybierz domyślny format eksportu.';
+      errors.push({fieldId: cfg.id, tab: cfg.tab, message});
+    }
+  });
+
+  const activeFormats = document.querySelectorAll('.fmt-cb:checked');
+  if(activeFormats.length === 0){
+    errors.push({fieldId:'fmtPdfEnabled', tab:'t10', message:'Wybierz co najmniej jeden aktywny format eksportu (PDF/Excel/CSV).'});
+  }
+
+  const exportPatternRules = [
+    {toggle:'fmtPdfEnabled', pattern:'pdfFilePattern', ext:'PDF', tab:'t10'},
+    {toggle:'fmtExcelEnabled', pattern:'excelFilePattern', ext:'Excel', tab:'t10'},
+    {toggle:'fmtCsvEnabled', pattern:'csvFilePattern', ext:'CSV', tab:'t10'}
+  ];
+  exportPatternRules.forEach(rule=>{
+    const toggle = document.getElementById(rule.toggle);
+    const patternInput = document.getElementById(rule.pattern);
+    if(!toggle || !patternInput || !toggle.checked) return;
+    if(!patternInput.value.trim()){
+      errors.push({fieldId: rule.pattern, tab: rule.tab, message: `Dla aktywnego formatu ${rule.ext} podaj wzorzec nazwy pliku.`});
+    } else if(!patternInput.checkValidity()){
+      errors.push({fieldId: rule.pattern, tab: rule.tab, message: `Wzorzec nazwy dla ${rule.ext} musi kończyć się odpowiednim rozszerzeniem.`});
+    }
+  });
+
+  return errors;
+}
+
+function renderValidationSummary(errors){
+  const alertsEl = document.getElementById('sumAlerts');
+  if(!alertsEl) return;
+  if(!errors.length){
+    alertsEl.innerHTML = `<div class="sum-alert ok"><i class="bi bi-check-circle"></i>Walidacja zakończona sukcesem. Możesz wygenerować dokumentację.</div>`;
+    return;
+  }
+
+  const list = errors.map(e=>`<li>${e.message}</li>`).join('');
+  alertsEl.innerHTML = `<div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i><div><div><strong>Popraw poniższe błędy:</strong></div><ul class="sum-alert-list">${list}</ul></div></div>`;
+}
+
+function validateBeforeSubmit(){
+  clearValidationErrors();
+  const errors = getValidationErrors();
+
+  errors.forEach(err=>showFieldError(err.fieldId, err.message));
+  renderValidationSummary(errors);
+
+  if(errors.length){
+    if(!summaryOpen) toggleSummary();
+    const first = errors[0];
+    goTab(first.tab);
+    const firstField = document.getElementById(first.fieldId);
+    if(firstField){
+      firstField.focus({preventScroll:false});
+    }
+    showToast('Uzupełnij wymagane pola przed generowaniem dokumentacji.','warning');
+    return false;
+  }
+
+  showToast('Dokumentacja wygenerowana!','success');
+  return true;
 }
 
 
@@ -2067,6 +2179,8 @@ function showToast(msg, type=''){
   c.appendChild(t);
   setTimeout(()=>{ t.classList.add('removing'); setTimeout(()=>t.remove(),250); }, 2500);
 }
+
+document.querySelectorAll('button:not([type])').forEach(btn=>{ btn.type = 'button'; });
 
 // ── INPUT CHANGE LISTENER ──
 document.addEventListener('input', e=>{
