@@ -372,6 +372,8 @@ body{
   padding:8px 10px;border-radius:8px;
   margin-bottom:4px;cursor:pointer;
   transition:all var(--trans);
+  width:100%;border:0;background:none;text-align:left;
+  font-family:'Epilogue',sans-serif;
 }
 .sum-tab-row:hover{background:var(--surface2);}
 .sum-tab-ico{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:10px;flex-shrink:0;}
@@ -447,6 +449,12 @@ body{
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:10px;
   background:var(--surface2);
+}
+.card-head.collapsible{
+  width:100%;
+  border:0;
+  text-align:left;
+  font-family:'Epilogue',sans-serif;
 }
 .card-ico{
   width:30px;height:30px;border-radius:7px;
@@ -659,6 +667,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .hf-zone{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;transition:all var(--trans);}
 .hf-zone:hover{border-color:var(--border2);box-shadow:var(--shadow);}
 .hf-zone-head{padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;cursor:pointer;}
+.hf-zone-head{width:100%;border:0;text-align:left;font-family:'Epilogue',sans-serif;}
 .hf-rh{background:linear-gradient(135deg,#d1fae5,#a7f3d0)!important;color:#065f46;}
 .hf-ph{background:linear-gradient(135deg,#dbeafe,#bfdbfe)!important;color:#1e3a8a;}
 .hf-pf{background:linear-gradient(135deg,#fef3c7,#fde68a)!important;color:#78350f;}
@@ -702,7 +711,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .fmt-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;transition:all var(--trans);}
 .fmt-card:hover{border-color:var(--border2);}
 .fmt-card:has(.fmt-cb:checked){border-color:var(--a);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
-.fmt-head{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--surface2);cursor:pointer;transition:all var(--trans);}
+.fmt-head{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--surface2);cursor:pointer;transition:all var(--trans);width:100%;border:0;text-align:left;font-family:'Epilogue',sans-serif;}
 .fmt-head:hover{background:var(--surface3);}
 .fmt-ico{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
 .fmt-pdf{background:var(--r-l);color:var(--r);}
@@ -766,6 +775,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   display:none;position:fixed;inset:0;
   background:rgba(15,23,42,.5);z-index:145;
   backdrop-filter:blur(4px);
+  border:0;
 }
 .mobile-menu-btn{
   display:none;width:36px;height:36px;border-radius:var(--radius-sm);
@@ -813,19 +823,29 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 input[type=checkbox]{accent-color:var(--a);width:15px;height:15px;cursor:pointer;}
 input[type=color]{border-radius:6px;border:1.5px solid var(--border);cursor:pointer;height:34px;}
 select.fs option{background:#fff;}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible{
+  outline:3px solid rgba(37,99,235,.45);
+  outline-offset:2px;
+}
 </style>
 </head>
 <body>
 
 <!-- ═══════════════ TOPBAR ═══════════════ -->
 <nav class="topbar" id="topbar">
-  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="openMobileMenu()"><i class="bi bi-list"></i></button>
+  <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" onclick="openMobileMenu()" aria-label="Otwórz menu mobilne"><i class="bi bi-list"></i></button>
   <a class="topbar-brand" href="#">
     <div class="brand-logo"><i class="bi bi-file-earmark-bar-graph"></i></div>
     <span class="brand-text">Report<span>Forge</span></span>
   </a>
   <div class="topbar-center">
-    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Pokaż/ukryj nawigację">
+    <button type="button" class="sidebar-toggle" onclick="toggleSidebar()" title="Pokaż/ukryj nawigację" aria-label="Pokaż lub ukryj nawigację">
       <i class="bi bi-layout-sidebar"></i>
     </button>
     <div class="global-progress" title="Postęp wypełnienia formularza">
@@ -834,14 +854,14 @@ select.fs option{background:#fff;}
     <span class="progress-label" id="progressLabel">0% gotowe</span>
   </div>
   <div class="topbar-right">
-    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
-    <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
+    <button type="button" class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button type="button" class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()" aria-controls="summaryPanel" aria-expanded="false"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button type="button" class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
 </nav>
 
 <!-- ═══════════════ MOBILE OVERLAY ═══════════════ -->
-<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+<button type="button" class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()" aria-label="Zamknij menu mobilne"></button>
 
 <!-- ═══════════════ SHELL ═══════════════ -->
 <div class="shell">
@@ -930,12 +950,12 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-blue"><i class="bi bi-tag"></i></div>
             <span class="card-title">Identyfikacja raportu</span>
             <span class="card-badge badge-req">WYMAGANE</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-2">
               <div class="field">
@@ -985,11 +1005,11 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-purple"><i class="bi bi-people"></i></div>
             <span class="card-title">Odpowiedzialność i terminy</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-3">
               <div class="field"><label class="field-label">Autor <i class="tip-btn">?<span class="tip-popup">Osoba wypełniająca formularz — punkt kontaktu przy pytaniach do specyfikacji.</span></i></label><input type="text" class="fc" placeholder="Imię i nazwisko" oninput="onFieldChange(this)"/></div>
@@ -1016,12 +1036,12 @@ select.fs option{background:#fff;}
         <div class="page-header"><h1>Źródło danych (SQL)</h1><p>Zdefiniuj skąd Crystal Reports pobiera dane — widok, procedura składowana lub zapytanie inline.</p></div>
 
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-blue"><i class="bi bi-database"></i></div>
             <span class="card-title">Konfiguracja połączenia</span>
             <span class="card-badge badge-req">WYMAGANE</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-3">
               <div class="field">
@@ -1056,11 +1076,11 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-blue"><i class="bi bi-toggles"></i></div>
             <span class="card-title">Dodatkowe opcje</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-3">
               <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" id="swCR"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Command mode (CR Command Object) <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">SQL bezpośrednio w CR bez widoku w bazie. Wygodne jednorazowo, trudniejsze długoterminowo.</span></i></span></div>
@@ -1189,11 +1209,11 @@ select.fs option{background:#fff;}
         <div class="page-header"><h1>Kolumny raportu</h1><p>Zdefiniuj każdą kolumnę — pole DB, nagłówek, typ, format i reguły formatowania warunkowego.</p></div>
 
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-blue"><i class="bi bi-fonts"></i></div>
             <span class="card-title">Tryb nagłówków kolumn</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="radio-group mb-2">
               <div class="rpill"><input type="radio" name="hm" id="hm1" value="static" checked onchange="setHM('static')"><label for="hm1">Statyczne</label></div>
@@ -1206,12 +1226,12 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-blue"><i class="bi bi-columns-gap"></i></div>
             <span class="card-title">Definicja kolumn</span>
             <span class="card-badge badge-req">WYMAGANE</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="dt-wrap">
               <table class="dt" id="colTable">
@@ -1233,7 +1253,7 @@ select.fs option{background:#fff;}
                     <td style="text-align:center"><input type="checkbox"/></td>
                     <td><select><option>L</option><option>Ś</option><option>P</option></select></td>
                     <td><select><option>Brak</option><option>Kolor</option><option>Tło</option><option>Bold</option><option>Wiele</option></select></td>
-                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                    <td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1247,11 +1267,11 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-3">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-yellow"><i class="bi bi-palette"></i></div>
             <span class="card-title">Formatowanie warunkowe (Conditional Formatting)</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="info-alert"><i class="bi bi-info-circle"></i>CR Highlighting Expert — reguły zmieniające kolor/styl komórek na podstawie wartości np. ujemne = czerwone.</div>
             <div class="dt-wrap">
@@ -1267,7 +1287,7 @@ select.fs option{background:#fff;}
                     <td><input type="color" value="#fee2e2"/></td>
                     <td><select><option>Normal</option><option>Bold</option><option>Italic</option></select></td>
                     <td><input type="text" placeholder="Wartość ujemna"/></td>
-                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                    <td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1304,7 +1324,7 @@ select.fs option{background:#fff;}
                     <td><select><option>DatePicker</option><option>TextBox</option><option>Dropdown</option><option>MultiSelect</option><option>Ukryta</option></select></td>
                     <td><input type="text" class="mono" placeholder="SELECT id,nazwa FROM..."/></td>
                     <td><input type="text" placeholder="Opis"/></td>
-                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                    <td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1323,11 +1343,11 @@ select.fs option{background:#fff;}
         <div class="step-indicator"><div class="step-dot"></div>Krok 5 z 10</div>
         <div class="page-header"><h1>Filtry i selekcja</h1><p>Warunki filtrowania na poziomie SQL WHERE lub CR Record Selection Formula.</p></div>
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-layers"></i></div>
             <span class="card-title">Strategia filtrowania</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="radio-group">
               <div class="rpill"><input type="radio" name="fs" id="fs1" checked><label for="fs1">SQL WHERE (push-down)</label></div>
@@ -1339,22 +1359,22 @@ select.fs option{background:#fff;}
           </div>
         </div>
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-diagram-3"></i></div>
             <span class="card-title">Builder warunków (AND/OR)</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div id="filterGroups"></div>
             <button class="btn-add" onclick="addFilterGroup()"><i class="bi bi-plus-square"></i>Dodaj grupę AND/OR</button>
           </div>
         </div>
         <div class="card card-nth-3">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-code-square"></i></div>
             <span class="card-title">CR Selection Formula (ręczna)</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="field mb-3">
               <label class="field-label">CR Record Selection Formula <i class="tip-btn">?<span class="tip-popup">Nadpisuje builder. Składnia Crystal Syntax. Widoczna w CR Designer → Report → Edit Selection Formula → Record.</span></i></label>
@@ -1394,7 +1414,7 @@ select.fs option{background:#fff;}
                     <td style="text-align:center"><input type="checkbox"/></td>
                     <td><input type="text" placeholder="Kategoria: {pole}"/></td>
                     <td><input type="text" placeholder="Razem: {SUM}"/></td>
-                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                    <td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1429,34 +1449,34 @@ select.fs option{background:#fff;}
         <div class="step-indicator"><div class="step-dot"></div>Krok 8 z 10</div>
         <div class="page-header"><h1>Nagłówki i stopki</h1><p>Skonfiguruj 4 strefy CR: Report Header, Page Header, Page Footer, Report Footer.</p></div>
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-braces"></i></div>
             <span class="card-title">Tokeny dynamiczne</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="field-hint mb-2"><i class="bi bi-info-circle"></i>Kliknij token aby wstawić do ostatnio aktywnego pola tekstowego.</div>
             <div class="token-chips">
-              <span class="tchip" onclick="insertToken('{PageNumber}')">{PageNumber}</span>
-              <span class="tchip" onclick="insertToken('{TotalPages}')">{TotalPages}</span>
-              <span class="tchip" onclick="insertToken('{PrintDate}')">{PrintDate}</span>
-              <span class="tchip" onclick="insertToken('{PrintTime}')">{PrintTime}</span>
-              <span class="tchip" onclick="insertToken('{ReportName}')">{ReportName}</span>
-              <span class="tchip g" onclick="insertToken('{?DataOd}')">{?DataOd}</span>
-              <span class="tchip g" onclick="insertToken('{?DataDo}')">{?DataDo}</span>
-              <span class="tchip g" onclick="insertToken('{?Użytkownik}')">{?Użytkownik}</span>
-              <span class="tchip y" onclick="insertToken('{@TytułRaportu}')">{@TytułRaportu}</span>
-              <span class="tchip y" onclick="insertToken('{@NazwaFirmy}')">{@NazwaFirmy}</span>
+              <button type="button" class="tchip" onclick="insertToken('{PageNumber}')">{PageNumber}</button>
+              <button type="button" class="tchip" onclick="insertToken('{TotalPages}')">{TotalPages}</button>
+              <button type="button" class="tchip" onclick="insertToken('{PrintDate}')">{PrintDate}</button>
+              <button type="button" class="tchip" onclick="insertToken('{PrintTime}')">{PrintTime}</button>
+              <button type="button" class="tchip" onclick="insertToken('{ReportName}')">{ReportName}</button>
+              <button type="button" class="tchip g" onclick="insertToken('{?DataOd}')">{?DataOd}</button>
+              <button type="button" class="tchip g" onclick="insertToken('{?DataDo}')">{?DataDo}</button>
+              <button type="button" class="tchip g" onclick="insertToken('{?Użytkownik}')">{?Użytkownik}</button>
+              <button type="button" class="tchip y" onclick="insertToken('{@TytułRaportu}')">{@TytułRaportu}</button>
+              <button type="button" class="tchip y" onclick="insertToken('{@NazwaFirmy}')">{@NazwaFirmy}</button>
             </div>
           </div>
         </div>
 
         <!-- Report Header -->
         <div class="hf-zone">
-          <div class="hf-zone-head hf-rh" onclick="toggleHF(this)">
+          <button type="button" class="hf-zone-head hf-rh" onclick="toggleHF(this)">
             <i class="bi bi-file-earmark-text"></i><strong>Report Header</strong> — raz, na początku pierwszej strony
             <i class="bi bi-chevron-down hf-chevron"></i>
-          </div>
+          </button>
           <div class="hf-body">
             <div class="form-row cols-2">
               <div class="field"><label class="field-label">Główny tytuł <span class="req-star">*</span> <i class="tip-btn">?<span class="tip-popup">Tytuł widoczny na początku raportu — duża czcionka, raz. Może zawierać tokeny CR.</span></i></label><input type="text" class="fc" id="rhTitle" placeholder="RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" oninput="onFieldChange(this)"/></div>
@@ -1473,10 +1493,10 @@ select.fs option{background:#fff;}
 
         <!-- Page Header -->
         <div class="hf-zone">
-          <div class="hf-zone-head hf-ph" onclick="toggleHF(this)">
+          <button type="button" class="hf-zone-head hf-ph" onclick="toggleHF(this)">
             <i class="bi bi-layout-text-window"></i><strong>Page Header</strong> — powtarzany na każdej stronie
             <i class="bi bi-chevron-down hf-chevron"></i>
-          </div>
+          </button>
           <div class="hf-body">
             <div class="form-row cols-3">
               <div class="field"><label class="field-label">Lewo</label><input type="text" class="fc" placeholder="ABC Sp. z o.o." oninput="onFieldChange(this)"/></div>
@@ -1493,10 +1513,10 @@ select.fs option{background:#fff;}
 
         <!-- Page Footer -->
         <div class="hf-zone">
-          <div class="hf-zone-head hf-pf" onclick="toggleHF(this)">
+          <button type="button" class="hf-zone-head hf-pf" onclick="toggleHF(this)">
             <i class="bi bi-layout-text-window-reverse"></i><strong>Page Footer</strong> — powtarzany na każdej stronie
             <i class="bi bi-chevron-down hf-chevron"></i>
-          </div>
+          </button>
           <div class="hf-body">
             <div class="form-row cols-3">
               <div class="field"><label class="field-label">Lewo</label><input type="text" class="fc" placeholder="© 2024 Firma" oninput="onFieldChange(this)"/></div>
@@ -1508,10 +1528,10 @@ select.fs option{background:#fff;}
 
         <!-- Report Footer -->
         <div class="hf-zone">
-          <div class="hf-zone-head hf-rf" onclick="toggleHF(this)">
+          <button type="button" class="hf-zone-head hf-rf" onclick="toggleHF(this)">
             <i class="bi bi-file-earmark-check"></i><strong>Report Footer</strong> — raz, po wszystkich danych (ostatnia strona)
             <i class="bi bi-chevron-down hf-chevron"></i>
-          </div>
+          </button>
           <div class="hf-body">
             <div class="form-row cols-2">
               <div class="field"><label class="field-label">Tekst podsumowujący <i class="tip-btn">?<span class="tip-popup">Tekst na końcu raportu np. "Koniec raportu. Liczba rekordów: {RecordCount}."</span></i></label><textarea class="fc" rows="2" placeholder="Koniec raportu. Liczba rekordów: {RecordCount}." oninput="onFieldChange(this)"></textarea></div>
@@ -1531,12 +1551,12 @@ select.fs option{background:#fff;}
         <div class="step-indicator"><div class="step-dot"></div>Krok 9 z 10</div>
         <div class="page-header"><h1>Zachowanie przy braku danych</h1><p>Zdefiniuj co widzi użytkownik gdy zapytanie nie zwróci żadnych rekordów.</p></div>
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-red"><i class="bi bi-sliders"></i></div>
             <span class="card-title">Strategia</span>
             <span class="card-badge badge-ux">UX</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="radio-group">
               <div class="rpill"><input type="radio" name="em" id="em1" checked><label for="em1">Komunikat w CR</label></div>
@@ -1547,11 +1567,11 @@ select.fs option{background:#fff;}
           </div>
         </div>
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-red"><i class="bi bi-chat-square-text"></i></div>
             <span class="card-title">Treść komunikatu</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-2">
               <div class="field"><label class="field-label">Główny tekst <i class="tip-btn">?<span class="tip-popup">Krótki, jasny komunikat dla użytkownika. Max 1-2 zdania. Bez technicznego żargonu.</span></i></label><input type="text" class="fc" id="emptyMsg" placeholder="Brak danych dla wybranych kryteriów." oninput="updateEmptyPreview()"/></div>
@@ -1577,16 +1597,16 @@ select.fs option{background:#fff;}
         <div class="page-header"><h1>Opcje wyjścia i eksport</h1><p>Zdefiniuj obsługiwane formaty eksportu z indywidualnymi ustawieniami dla każdego.</p></div>
 
         <div class="card card-nth-1">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-file-earmark-arrow-down"></i></div>
             <span class="card-title">Formaty eksportu</span>
             <span class="card-badge badge-req">WYMAGANE</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body" id="fmtContainer">
             <!-- PDF -->
             <div class="fmt-card">
-              <div class="fmt-head" onclick="toggleFmt(this)">
+              <button type="button" class="fmt-head" onclick="toggleFmt(this)">
                 <div class="fmt-ico fmt-pdf"><i class="bi bi-filetype-pdf"></i></div>
                 <span class="fmt-name">PDF</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
@@ -1594,7 +1614,7 @@ select.fs option{background:#fff;}
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
-              </div>
+              </button>
               <div class="fmt-body open">
                 <div class="form-row auto">
                   <div class="field"><label class="field-label">Orientacja <i class="tip-btn">?<span class="tip-popup">Auto = CR dobiera wg szerokości. Landscape dla szerokich tabel.</span></i></label><select class="fs"><option>Portrait</option><option>Landscape</option><option>Auto</option></select></div>
@@ -1608,7 +1628,7 @@ select.fs option{background:#fff;}
             </div>
             <!-- Excel -->
             <div class="fmt-card">
-              <div class="fmt-head" onclick="toggleFmt(this)">
+              <button type="button" class="fmt-head" onclick="toggleFmt(this)">
                 <div class="fmt-ico fmt-xls"><i class="bi bi-filetype-xlsx"></i></div>
                 <span class="fmt-name">Excel (.xlsx)</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
@@ -1616,7 +1636,7 @@ select.fs option{background:#fff;}
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
-              </div>
+              </button>
               <div class="fmt-body">
                 <div class="form-row auto">
                   <div class="field"><label class="field-label">Format Excel <i class="tip-btn">?<span class="tip-popup">Data Only = surowe dane bez formatowania CR — lepsza edytowalność w Excel.</span></i></label><select class="fs"><option>XLSX</option><option>XLSX Data Only</option><option>XLS</option></select></div>
@@ -1631,7 +1651,7 @@ select.fs option{background:#fff;}
             </div>
             <!-- CSV -->
             <div class="fmt-card">
-              <div class="fmt-head" onclick="toggleFmt(this)">
+              <button type="button" class="fmt-head" onclick="toggleFmt(this)">
                 <div class="fmt-ico fmt-csv"><i class="bi bi-filetype-csv"></i></div>
                 <span class="fmt-name">CSV / Tekst</span>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
@@ -1639,7 +1659,7 @@ select.fs option{background:#fff;}
                   <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
                 </div>
                 <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
-              </div>
+              </button>
               <div class="fmt-body">
                 <div class="form-row auto">
                   <div class="field"><label class="field-label">Separator <i class="tip-btn">?<span class="tip-popup">Średnik (;) = standard PL Excel. Przecinek (,) = EN. Tabulator dla legacy.</span></i></label><select class="fs"><option>Średnik (;)</option><option>Przecinek (,)</option><option>Tabulator (\t)</option><option>Pionowa kreska (|)</option></select></div>
@@ -1654,11 +1674,11 @@ select.fs option{background:#fff;}
         </div>
 
         <div class="card card-nth-2">
-          <div class="card-head collapsible" onclick="toggleCard(this)">
+          <button type="button" class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-green"><i class="bi bi-gear"></i></div>
             <span class="card-title">Ogólne opcje dostarczania</span>
             <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
-          </div>
+          </button>
           <div class="card-body">
             <div class="form-row cols-3">
               <div class="field"><label class="field-label">Domyślny format <span class="req-star">*</span></label><select class="fs" id="defaultExportFormat" required onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
@@ -1682,7 +1702,7 @@ select.fs option{background:#fff;}
   <aside class="summary-panel" id="summaryPanel">
     <div class="sum-panel-head">
       <span class="sum-panel-title"><i class="bi bi-clipboard-data me-2"></i>Podsumowanie</span>
-      <button class="sum-panel-close" onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
+      <button type="button" class="sum-panel-close" onclick="toggleSummary()" aria-label="Zamknij panel podsumowania"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="sum-panel-body" id="sumPanelBody">
       <div class="sum-score">
@@ -1731,7 +1751,7 @@ select.fs option{background:#fff;}
     <span id="footerStepName">Informacje ogólne</span>
   </div>
   <div class="footer-actions">
-    <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
+    <button class="tb-btn" type="button" onclick="toggleSidebar()" aria-label="Pokaż lub ukryj nawigację"><i class="bi bi-layout-sidebar"></i></button>
     <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
@@ -1759,6 +1779,47 @@ const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
 let summaryOpen = false;
 let currentTab = 't1';
+let generatedFieldId = 0;
+
+function ensureLabelAssociations(scope=document){
+  scope.querySelectorAll('.field').forEach((field)=>{
+    const label = field.querySelector('label.field-label');
+    const control = field.querySelector('input,select,textarea');
+    if(!label || !control) return;
+    if(!control.id){
+      control.id = `auto-field-${++generatedFieldId}`;
+    }
+    if(!label.htmlFor){
+      label.htmlFor = control.id;
+    }
+  });
+}
+
+function setupCollapsibleA11y(){
+  document.querySelectorAll('.card-head.collapsible').forEach((head, i)=>{
+    const card = head.closest('.card');
+    const body = card?.querySelector('.card-body');
+    if(!body) return;
+    if(!body.id) body.id = `card-section-${i+1}`;
+    head.setAttribute('aria-controls', body.id);
+    head.setAttribute('aria-expanded', String(!card.classList.contains('collapsed')));
+  });
+  document.querySelectorAll('.hf-zone-head').forEach((head, i)=>{
+    const zone = head.closest('.hf-zone');
+    const body = zone?.querySelector('.hf-body');
+    if(!body) return;
+    if(!body.id) body.id = `hf-section-${i+1}`;
+    head.setAttribute('aria-controls', body.id);
+    head.setAttribute('aria-expanded', String(!zone.classList.contains('hf-collapsed')));
+  });
+  document.querySelectorAll('.fmt-head').forEach((head, i)=>{
+    const body = head.nextElementSibling;
+    if(!body || !body.classList.contains('fmt-body')) return;
+    if(!body.id) body.id = `fmt-section-${i+1}`;
+    head.setAttribute('aria-controls', body.id);
+    head.setAttribute('aria-expanded', String(body.classList.contains('open')));
+  });
+}
 
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(){
@@ -1780,7 +1841,9 @@ function closeMobileMenu(){
 function toggleSummary(){
   summaryOpen = !summaryOpen;
   document.body.classList.toggle('body-summary-open', summaryOpen);
-  document.getElementById('summaryToggleBtn').classList.toggle('active', summaryOpen);
+  const summaryBtn = document.getElementById('summaryToggleBtn');
+  summaryBtn.classList.toggle('active', summaryOpen);
+  summaryBtn.setAttribute('aria-expanded', String(summaryOpen));
   if(summaryOpen) buildSummaryPanel();
 }
 
@@ -1807,12 +1870,14 @@ function goTab(id){
 function toggleCard(head){
   const card = head.closest('.card');
   card.classList.toggle('collapsed');
+  head.setAttribute('aria-expanded', String(!card.classList.contains('collapsed')));
 }
 
 // ── HF ZONE COLLAPSE ──
 function toggleHF(head){
   const zone = head.closest('.hf-zone');
   zone.classList.toggle('hf-collapsed');
+  head.setAttribute('aria-expanded', String(!zone.classList.contains('hf-collapsed')));
 }
 
 // ── SQL FIELDS ──
@@ -1852,7 +1917,7 @@ function colRowHtml(n, type=''){
     <td style="text-align:center"><input type="checkbox"/></td>
     <td><select><option>L</option><option>Ś</option><option>P</option></select></td>
     <td><select><option>Brak</option><option>Kolor</option><option>Tło</option><option>Bold</option><option>Wiele</option></select></td>
-    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+    <td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td>
   </tr>`;
 }
 function addColRow(){ const tb=document.getElementById('colBody'); tb.insertAdjacentHTML('beforeend', colRowHtml(tb.rows.length+1)); scheduleUpdate(); }
@@ -1862,31 +1927,33 @@ function addRunningTotal(){ const tb=document.getElementById('colBody'); tb.inse
 // ── ADD CF ROW ──
 function addCFRow(){
   const tb=document.getElementById('cfBody'); const n=tb.rows.length+1;
-  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="kolumna"/></td><td><input type="text" class="mono" placeholder="{pole} < 0"/></td><td><select><option>Kolor tekstu</option><option>Kolor tła</option><option>Oba</option><option>Bold</option></select></td><td><input type="color" value="#dc2626"/></td><td><input type="color" value="#fee2e2"/></td><td><select><option>Normal</option><option>Bold</option><option>Italic</option></select></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="kolumna"/></td><td><input type="text" class="mono" placeholder="{pole} < 0"/></td><td><select><option>Kolor tekstu</option><option>Kolor tła</option><option>Oba</option><option>Bold</option></select></td><td><input type="color" value="#dc2626"/></td><td><input type="color" value="#fee2e2"/></td><td><select><option>Normal</option><option>Bold</option><option>Italic</option></select></td><td><input type="text" placeholder="Opis"/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`);
 }
 
 // ── ADD PARAM ROW ──
 function addParamRow(){
   const tb=document.getElementById('paramBody'); const n=tb.rows.length+1;
-  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="NazwaParam"/></td><td><select><option>—</option><option>String</option><option>Number</option><option>Date</option><option>DateTime</option><option>Boolean</option></select></td><td><input type="text" placeholder="domyślna"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><select><option>DatePicker</option><option>TextBox</option><option>Dropdown</option><option>MultiSelect</option><option>Ukryta</option></select></td><td><input type="text" class="mono" placeholder="SELECT..."/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); scheduleUpdate();
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="NazwaParam"/></td><td><select><option>—</option><option>String</option><option>Number</option><option>Date</option><option>DateTime</option><option>Boolean</option></select></td><td><input type="text" placeholder="domyślna"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><select><option>DatePicker</option><option>TextBox</option><option>Dropdown</option><option>MultiSelect</option><option>Ukryta</option></select></td><td><input type="text" class="mono" placeholder="SELECT..."/></td><td><input type="text" placeholder="Opis"/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`); scheduleUpdate();
 }
 
 // ── FILTER GROUP ──
 let fgc = 0;
 function addFilterGroup(){
   fgc++; const div=document.createElement('div'); div.className='cond-group';
-  div.innerHTML=`<div class="cond-group-bar"><span style="font-size:11px;font-weight:800;color:var(--muted);font-family:'JetBrains Mono',monospace">GRUPA ${fgc}</span><span style="font-size:12px;color:var(--muted)">Wewnątrz:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><span style="margin-left:auto;font-size:12px;color:var(--muted)">Z następną:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><button class="btn-danger-sm ms-2" onclick="this.closest('.cond-group').remove()"><i class="bi bi-x"></i></button></div><div style="padding:8px"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Poziom</th><th>Operator</th><th>Wartość</th><th>Typ wartości</th><th>NOT</th><th>Opis</th><th></th></tr></thead><tbody class="filter-rows"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" style="font-size:12px;padding:5px 12px" onclick="addFilterRow(this)"><i class="bi bi-plus-lg"></i>Dodaj warunek</button></div>`;
+  div.innerHTML=`<div class="cond-group-bar"><span style="font-size:11px;font-weight:800;color:var(--muted);font-family:'JetBrains Mono',monospace">GRUPA ${fgc}</span><span style="font-size:12px;color:var(--muted)">Wewnątrz:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><span style="margin-left:auto;font-size:12px;color:var(--muted)">Z następną:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><button class="btn-danger-sm ms-2" onclick="this.closest('.cond-group').remove()"><i class="bi bi-x"></i></button></div><div style="padding:8px"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Poziom</th><th>Operator</th><th>Wartość</th><th>Typ wartości</th><th>NOT</th><th>Opis</th><th></th></tr></thead><tbody class="filter-rows"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" style="font-size:12px;padding:5px 12px" onclick="addFilterRow(this)"><i class="bi bi-plus-lg"></i>Dodaj warunek</button></div>`;
   document.getElementById('filterGroups').appendChild(div);
+  ensureLabelAssociations(div);
+  scheduleUpdate();
 }
 function addFilterRow(btn){
   const tb=btn.closest('.cond-group').querySelector('.filter-rows'); const n=tb.rows.length+1;
-  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`);
 }
 
 // ── ADD GROUP ROW ──
 function addGroupRow(){
   const tb=document.getElementById('groupBody'); const n=tb.rows.length+1;
-  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>ASC</option><option>DESC</option><option>Custom</option></select></td><td><select><option>Brak</option><option>SUM</option><option>COUNT</option><option>AVG</option><option>MIN</option><option>MAX</option></select></td><td><input type="text" class="mono" placeholder="pole_kwota"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><input type="text" placeholder="Stopka"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>ASC</option><option>DESC</option><option>Custom</option></select></td><td><select><option>Brak</option><option>SUM</option><option>COUNT</option><option>AVG</option><option>MIN</option><option>MAX</option></select></td><td><input type="text" class="mono" placeholder="pole_kwota"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><input type="text" placeholder="Stopka"/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`);
 }
 
 // ── SUBREPORTS ──
@@ -1894,9 +1961,11 @@ let src = 0;
 function addSubreport(){
   src++; const id=`sr${src}`;
   const div=document.createElement('div'); div.className='sr-card'; div.id=id;
-  div.innerHTML=`<div class="sr-head"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">SR-${String(src).padStart(2,'0')}</span><span style="font-weight:800;flex:1;font-size:13px" id="${id}-label">Nowy podraport</span><span class="sr-pill sr-inline">Inline</span><button class="btn-rm ms-2" onclick="this.closest('.sr-card').remove()"><i class="bi bi-trash3"></i></button></div><div class="sr-tabs"><button class="sr-tab active" onclick="srTab(this,'${id}-a')">Identyfikacja</button><button class="sr-tab" onclick="srTab(this,'${id}-b')">Źródło danych</button><button class="sr-tab" onclick="srTab(this,'${id}-c')">Powiązanie</button><button class="sr-tab" onclick="srTab(this,'${id}-d')">Kolumny</button><button class="sr-tab" onclick="srTab(this,'${id}-e')">Wydajność</button></div><div class="sr-pane active" id="${id}-a"><div class="form-row cols-3"><div class="field"><label class="field-label">Nazwa .rpt</label><input type="text" class="fc mono" placeholder="SR_Nazwa.rpt" oninput="document.getElementById('${id}-label').textContent=this.value||'Nowy podraport'"/></div><div class="field"><label class="field-label">Typ</label><select class="fs"><option>Inline</option><option>On-demand</option><option>Linked Embedded</option></select></div><div class="field"><label class="field-label">Sekcja CR</label><select class="fs"><option>Report Header</option><option>Report Footer</option><option>Group Header</option><option>Group Footer</option><option>Details</option></select></div></div><div class="field mt-2"><label class="field-label">Opis biznesowy</label><textarea class="fc" rows="2" placeholder="Co prezentuje ten podraport?"></textarea></div></div><div class="sr-pane" id="${id}-b"><div class="form-row cols-3"><div class="field"><label class="field-label">Typ źródła</label><select class="fs"><option>VIEW</option><option>SP</option><option>Zapytanie SQL</option></select></div><div class="field"><label class="field-label">Obiekt SQL</label><input type="text" class="fc mono" placeholder="dbo.v_SR_Dane"/></div><div class="field"><label class="field-label">Parametry SR</label><input type="text" class="fc" placeholder="LinkID:Number"/></div></div><div class="field mt-2"><label class="field-label">Zapytanie SQL</label><textarea class="fc mono" rows="3" placeholder="SELECT ... WHERE id = {?LinkID}"></textarea></div></div><div class="sr-pane" id="${id}-c"><div class="info-alert mb-3"><i class="bi bi-info-circle"></i>Powiązanie = przekazywanie wartości z raportu głównego do parametrów SR przez SubreportLinks.</div><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole raportu głównego</th><th>→</th><th>Parametr SR ({?X})</th><th>Konwersja</th><th></th></tr></thead><tbody id="${id}-links"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="{Orders.ID}"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?LinkID}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrLink('${id}-links')"><i class="bi bi-plus-lg"></i>Dodaj powiązanie</button></div><div class="sr-pane" id="${id}-d"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Nagłówek</th><th>Typ</th><th>Format</th><th>Widoczna</th><th></th></tr></thead><tbody id="${id}-cols"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrCol('${id}-cols')"><i class="bi bi-plus-lg"></i>Dodaj kolumnę</button></div><div class="sr-pane" id="${id}-e"><div class="form-row cols-3"><div class="field"><label class="field-label">Wywołania</label><select class="fs"><option>1 raz</option><option>Per grupę</option><option>Per wiersz</option><option>On-demand</option></select></div><div class="field"><label class="field-label">Szac. wierszy SR</label><select class="fs"><option>Małe (&lt;50)</option><option>Średnie (50-500)</option><option>Duże (500-5000)</option><option>Bardzo duże (&gt;5000)</option></select></div><div class="field"><label class="field-label">Ryzyko wydajnościowe</label><select class="fs"><option>Niskie</option><option>Średnie</option><option>Wysokie</option><option>Krytyczne</option></select></div></div><div class="field mt-2"><label class="field-label">Uwagi optymalizacyjne</label><input type="text" class="fc" placeholder="np. Rozważ JOIN zamiast podraportu..."/></div></div>`;
+  div.innerHTML=`<div class="sr-head"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">SR-${String(src).padStart(2,'0')}</span><span style="font-weight:800;flex:1;font-size:13px" id="${id}-label">Nowy podraport</span><span class="sr-pill sr-inline">Inline</span><button type="button" class="btn-rm ms-2" onclick="this.closest('.sr-card').remove()" aria-label="Usuń podraport"><i class="bi bi-trash3"></i></button></div><div class="sr-tabs"><button type="button" class="sr-tab active" onclick="srTab(this,'${id}-a')">Identyfikacja</button><button type="button" class="sr-tab" onclick="srTab(this,'${id}-b')">Źródło danych</button><button type="button" class="sr-tab" onclick="srTab(this,'${id}-c')">Powiązanie</button><button type="button" class="sr-tab" onclick="srTab(this,'${id}-d')">Kolumny</button><button type="button" class="sr-tab" onclick="srTab(this,'${id}-e')">Wydajność</button></div><div class="sr-pane active" id="${id}-a"><div class="form-row cols-3"><div class="field"><label class="field-label">Nazwa .rpt</label><input type="text" class="fc mono" placeholder="SR_Nazwa.rpt" oninput="document.getElementById('${id}-label').textContent=this.value||'Nowy podraport'"/></div><div class="field"><label class="field-label">Typ</label><select class="fs"><option>Inline</option><option>On-demand</option><option>Linked Embedded</option></select></div><div class="field"><label class="field-label">Sekcja CR</label><select class="fs"><option>Report Header</option><option>Report Footer</option><option>Group Header</option><option>Group Footer</option><option>Details</option></select></div></div><div class="field mt-2"><label class="field-label">Opis biznesowy</label><textarea class="fc" rows="2" placeholder="Co prezentuje ten podraport?"></textarea></div></div><div class="sr-pane" id="${id}-b"><div class="form-row cols-3"><div class="field"><label class="field-label">Typ źródła</label><select class="fs"><option>VIEW</option><option>SP</option><option>Zapytanie SQL</option></select></div><div class="field"><label class="field-label">Obiekt SQL</label><input type="text" class="fc mono" placeholder="dbo.v_SR_Dane"/></div><div class="field"><label class="field-label">Parametry SR</label><input type="text" class="fc" placeholder="LinkID:Number"/></div></div><div class="field mt-2"><label class="field-label">Zapytanie SQL</label><textarea class="fc mono" rows="3" placeholder="SELECT ... WHERE id = {?LinkID}"></textarea></div></div><div class="sr-pane" id="${id}-c"><div class="info-alert mb-3"><i class="bi bi-info-circle"></i>Powiązanie = przekazywanie wartości z raportu głównego do parametrów SR przez SubreportLinks.</div><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole raportu głównego</th><th>→</th><th>Parametr SR ({?X})</th><th>Konwersja</th><th></th></tr></thead><tbody id="${id}-links"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="{Orders.ID}"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?LinkID}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrLink('${id}-links')"><i class="bi bi-plus-lg"></i>Dodaj powiązanie</button></div><div class="sr-pane" id="${id}-d"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Nagłówek</th><th>Typ</th><th>Format</th><th>Widoczna</th><th></th></tr></thead><tbody id="${id}-cols"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrCol('${id}-cols')"><i class="bi bi-plus-lg"></i>Dodaj kolumnę</button></div><div class="sr-pane" id="${id}-e"><div class="form-row cols-3"><div class="field"><label class="field-label">Wywołania</label><select class="fs"><option>1 raz</option><option>Per grupę</option><option>Per wiersz</option><option>On-demand</option></select></div><div class="field"><label class="field-label">Szac. wierszy SR</label><select class="fs"><option>Małe (&lt;50)</option><option>Średnie (50-500)</option><option>Duże (500-5000)</option><option>Bardzo duże (&gt;5000)</option></select></div><div class="field"><label class="field-label">Ryzyko wydajnościowe</label><select class="fs"><option>Niskie</option><option>Średnie</option><option>Wysokie</option><option>Krytyczne</option></select></div></div><div class="field mt-2"><label class="field-label">Uwagi optymalizacyjne</label><input type="text" class="fc" placeholder="np. Rozważ JOIN zamiast podraportu..."/></div></div>`;
   document.getElementById('subreportList').appendChild(div);
+  ensureLabelAssociations(div);
 }
+
 function srTab(btn, panId){
   const sc=btn.closest('.sr-card');
   sc.querySelectorAll('.sr-tab').forEach(t=>t.classList.remove('active'));
@@ -1904,19 +1973,22 @@ function srTab(btn, panId){
   btn.classList.add('active');
   document.getElementById(panId).classList.add('active');
 }
-function addSrLink(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole główne"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?Param}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); }
-function addSrCol(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); }
+function addSrLink(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole główne"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?Param}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`); }
+function addSrCol(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button type="button" class="btn-rm" onclick="removeRow(this)" aria-label="Usuń wiersz"><i class="bi bi-trash3"></i></button></td></tr>`); }
 
 // ── FORMAT CARD ──
 function toggleFmt(head){
   const body=head.nextElementSibling;
   body.classList.toggle('open');
-  head.querySelector('.fmt-chevron').style.transform=body.classList.contains('open')?'':'rotate(-90deg)';
+  const isOpen = body.classList.contains('open');
+  head.setAttribute('aria-expanded', String(isOpen));
+  head.querySelector('.fmt-chevron').style.transform=isOpen?'':'rotate(-90deg)';
 }
 function addFmtCard(){
   const fmt=prompt('Nazwa formatu:'); if(!fmt) return;
   document.getElementById('fmtContainer').insertAdjacentHTML('beforeend',`<div class="fmt-card mt-2"><div class="fmt-head" onclick="toggleFmt(this)"><div class="fmt-ico" style="background:var(--a-l);color:var(--a)"><i class="bi bi-file-earmark"></i></div><span class="fmt-name">${fmt}</span><div style="margin-left:auto" onclick="event.stopPropagation()"><label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label></div><i class="bi bi-chevron-down fmt-chevron ms-2"></i></div><div class="fmt-body open"><div class="form-row cols-2"><div class="field"><label class="field-label">Typ eksportu CR</label><input type="text" class="fc mono" placeholder="ExportFormatType.HTML40"/></div><div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport.html"/></div></div><div class="field mt-2"><label class="field-label">Wytyczne dewelopera</label><textarea class="fc" rows="2" placeholder="Opisz wymagania..."></textarea></div></div></div>`);
 }
+
 
 // ── TOKENS ──
 let lastFC = null;
@@ -2101,7 +2173,7 @@ function buildSummaryPanel(tabData, pct){
       <div class="tab-ico sum-tab-ico ${icoClass}"><i class="bi ${icoI}"></i></div>
       <span class="sum-tab-name">${t.name}</span>
       <span class="sum-tab-pct">${pctTxt}</span>
-    </div>`;
+    </button>`;
   }).join('');
 
   // Details
@@ -2275,6 +2347,8 @@ document.addEventListener('change', e=>{
 // ── INIT ──
 // Add initial filter group
 addFilterGroup();
+ensureLabelAssociations();
+setupCollapsibleA11y();
 // Initial update
 setTimeout(updateAll, 300);
 
