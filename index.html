@@ -604,6 +604,16 @@ body{
 }
 .global-tip.visible{opacity:1;transform:translateY(0);}
 
+@media (prefers-contrast: more), (forced-colors: active){
+  .global-tip{
+    border:2px solid currentColor;
+    background:#000;
+    color:#fff;
+    box-shadow:none;
+    opacity:1;
+  }
+}
+
 @media(max-width:900px){
   .tip-popup{left:auto;right:0;transform:translateY(5px);}
   .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{transform:translateY(0);}
@@ -1903,6 +1913,106 @@ function initTheme(){
   const saved = localStorage.getItem('rf-theme');
   const initial = saved === 'dark' || saved === 'auto' ? saved : 'light';
   setTheme(initial);
+}
+
+function getTipText(btn){
+  const popup = btn.querySelector('.tip-popup');
+  return popup ? popup.textContent.trim() : '';
+}
+
+function updateTipAria(btn, expanded){
+  const hasText = !!getTipText(btn);
+  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  btn.setAttribute('aria-label', expanded ? 'Ukryj podpowiedź' : (hasText ? `Pokaż podpowiedź: ${getTipText(btn)}` : 'Pokaż podpowiedź'));
+}
+
+function showGlobalTip(btn){
+  const tipEl = document.getElementById('globalTip');
+  const text = getTipText(btn);
+  if(!tipEl || !text) return;
+  const popup = btn.querySelector('.tip-popup');
+  if(!popup) return;
+
+  if(activeTipBtn && activeTipBtn !== btn) hideGlobalTip(activeTipBtn, false);
+
+  tipEl.textContent = text;
+  const rect = btn.getBoundingClientRect();
+  const top = rect.bottom + 8;
+  const left = Math.min(Math.max(rect.left + rect.width / 2, 12), window.innerWidth - 12);
+
+  tipEl.style.top = `${top}px`;
+  tipEl.style.left = `${left}px`;
+  tipEl.style.transform = 'translate(-50%, 0)';
+  tipEl.classList.add('visible');
+  tipEl.setAttribute('aria-hidden', 'false');
+
+  btn.setAttribute('aria-describedby', 'globalTip');
+  updateTipAria(btn, true);
+  activeTipBtn = btn;
+}
+
+function hideGlobalTip(btn = activeTipBtn, clearActive = true){
+  const tipEl = document.getElementById('globalTip');
+  if(!tipEl || !btn) return;
+  tipEl.classList.remove('visible');
+  tipEl.setAttribute('aria-hidden', 'true');
+  btn.removeAttribute('aria-describedby');
+  updateTipAria(btn, false);
+  if(clearActive && activeTipBtn === btn) activeTipBtn = null;
+}
+
+function initGlobalTooltips(){
+  const tipEl = document.getElementById('globalTip');
+  if(!tipEl) return;
+  tipEl.setAttribute('role', 'tooltip');
+
+  document.querySelectorAll('.tip-btn').forEach(btn=>{
+    if(btn.tabIndex < 0) btn.tabIndex = 0;
+    btn.setAttribute('role', 'button');
+    updateTipAria(btn, false);
+
+    btn.addEventListener('mouseenter', ()=>showGlobalTip(btn));
+    btn.addEventListener('focus', ()=>showGlobalTip(btn));
+
+    btn.addEventListener('mouseleave', ()=>{
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+    });
+    btn.addEventListener('blur', ()=>{
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+    });
+
+    btn.addEventListener('click', e=>{
+      e.preventDefault();
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+      else showGlobalTip(btn);
+    });
+
+    btn.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        showGlobalTip(btn);
+      }
+      if(e.key === 'Escape'){
+        e.preventDefault();
+        hideGlobalTip(btn);
+        btn.blur();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape' && activeTipBtn){
+      hideGlobalTip(activeTipBtn);
+    }
+  });
+
+  window.addEventListener('resize', ()=>{
+    if(activeTipBtn) showGlobalTip(activeTipBtn);
+  });
+
+  window.addEventListener('scroll', ()=>{
+    if(activeTipBtn) showGlobalTip(activeTipBtn);
+  }, true);
 }
 
 // ── SIDEBAR TOGGLE ──
