@@ -834,9 +834,9 @@ select.fs option{background:#fff;}
     <span class="progress-label" id="progressLabel">0% gotowe</span>
   </div>
   <div class="topbar-right">
-    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
+    <button class="tb-btn primary" onclick="generateDocumentation()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
 </nav>
 
@@ -907,7 +907,7 @@ select.fs option{background:#fff;}
     </div>
 
     <div class="sidebar-footer">
-      <button class="sidebar-footer-btn" onclick="showToast('Szkic zapisany!','success')">
+      <button class="sidebar-footer-btn" onclick="saveDraft()">
         <i class="bi bi-save"></i><span class="tab-label">Zapisz szkic</span>
       </button>
       <button class="sidebar-footer-btn" onclick="toggleSummary()">
@@ -1609,8 +1609,8 @@ select.fs option{background:#fff;}
       <div id="sumAlerts"></div>
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
-        <button class="btn-primary" id="generateDocumentationBtn" type="button" style="width:100%;justify-content:center" onclick="validateBeforeSubmit()"><i class="bi bi-file-earmark-text"></i>Generuj dokumentację</button>
-        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="showToast('Dane skopiowane!','success')"><i class="bi bi-clipboard"></i>Kopiuj jako JSON</button>
+        <button class="btn-primary" style="width:100%;justify-content:center" onclick="generateDocumentation()"><i class="bi bi-file-earmark-text"></i>Generuj dokumentację</button>
+        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="copyAsJson()"><i class="bi bi-clipboard"></i>Kopiuj jako JSON</button>
       </div>
     </div>
   </aside>
@@ -1626,7 +1626,7 @@ select.fs option{background:#fff;}
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
     <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="btn-primary" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
 </div>
 
@@ -2058,6 +2058,118 @@ function validateBeforeSubmit(){
   return true;
 }
 
+
+const STORAGE_KEY = 'reportforge-cr-draft-v1';
+
+function getFieldValue(el){
+  if(!el) return '';
+  if(el.type === 'checkbox') return el.checked;
+  if(el.type === 'radio') return el.checked ? el.value : '';
+  return (el.value || '').trim();
+}
+
+function collectFormData(){
+  const data = { generatedAt: new Date().toISOString(), tabs: {} };
+  TABS.forEach(tab=>{
+    const pane = document.getElementById(tab.id);
+    if(!pane) return;
+    const fields = pane.querySelectorAll('input,select,textarea');
+    const values = {};
+    fields.forEach((field, i)=>{
+      const key = field.id || field.name || `${field.tagName.toLowerCase()}_${i}`;
+      const val = getFieldValue(field);
+      if(val === '' || val === false) return;
+      values[key] = val;
+    });
+    data.tabs[tab.id] = values;
+  });
+  data.summary = {
+    reportName: (document.getElementById('rName')||{}).value || '',
+    reportTitle: (document.getElementById('rTitle')||{}).value || '',
+    sqlType: (document.getElementById('sqlType')||{}).value || '',
+    columns: document.getElementById('colBody').rows.length,
+    parameters: document.getElementById('paramBody').rows.length
+  };
+  return data;
+}
+
+function saveDraft(){
+  const payload = collectFormData();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  showToast('Szkic zapisany lokalnie (localStorage).','success');
+}
+
+function copyAsJson(){
+  const payload = collectFormData();
+  const json = JSON.stringify(payload, null, 2);
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(json)
+      .then(()=>showToast('Dane skopiowane jako JSON.','success'))
+      .catch(()=>showJsonFallback(json));
+  } else {
+    showJsonFallback(json);
+  }
+}
+
+function showJsonFallback(json){
+  const win = window.open('', '_blank');
+  if(win){
+    win.document.write(`<pre style="white-space:pre-wrap;font-family:monospace;padding:16px">${json.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</pre>`);
+    win.document.close();
+    showToast('JSON otwarto w nowym oknie (fallback).','warning');
+  } else {
+    showToast('Nie udało się skopiować JSON — sprawdź uprawnienia przeglądarki.','warning');
+  }
+}
+
+function findMissingRequiredFields(){
+  const missing = [];
+  TABS.forEach(tab=>{
+    tab.required.forEach(id=>{
+      const el = document.getElementById(id);
+      const val = getFieldValue(el);
+      if(!val){
+        const label = el?.closest('.field')?.querySelector('.field-label');
+        const labelTxt = label ? label.textContent.replace(/\s+/g,' ').trim() : id;
+        missing.push(`${tab.name}: ${labelTxt}`);
+      }
+    });
+  });
+  return missing;
+}
+
+function generateDocumentation(){
+  const missing = findMissingRequiredFields();
+  if(missing.length){
+    const first = missing.slice(0,3).join(' | ');
+    showToast(`Uzupełnij pola wymagane: ${first}${missing.length>3?'...':''}`,'warning');
+    if(!summaryOpen) toggleSummary();
+    return;
+  }
+  saveDraft();
+  showToast('Dokumentacja gotowa do przekazania deweloperowi.','success');
+}
+
+function restoreDraftOnLoad(){
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e){ draft = null; }
+  if(!draft || !draft.tabs) return;
+  Object.entries(draft.tabs).forEach(([tabId, values])=>{
+    const pane = document.getElementById(tabId);
+    if(!pane) return;
+    Object.entries(values).forEach(([key, val])=>{
+      const el = pane.querySelector(`#${CSS.escape(key)}`) || pane.querySelector(`[name="${key}"]`);
+      if(!el) return;
+      if(el.type === 'checkbox') el.checked = Boolean(val);
+      else el.value = val;
+      if(el.classList.contains('fc') && String(val).trim()) el.classList.add('filled');
+    });
+  });
+  toggleSqlFields();
+  updateEmptyPreview();
+  showToast('Przywrócono lokalny szkic formularza.','success');
+}
+
 // ── TOAST ──
 function showToast(msg, type=''){
   const c=document.getElementById('toastContainer');
@@ -2083,6 +2195,7 @@ document.addEventListener('change', e=>{
 addFilterGroup();
 // Initial update
 setTimeout(updateAll, 300);
+restoreDraftOnLoad();
 
 // ── ANIMATE CARDS ON TAB SWITCH ──
 const tabObs = new MutationObserver(()=>{
