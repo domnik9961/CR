@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ReportForge — Kreator Definicji CR</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&family=Epilogue:wght@400;500;600;700&display=swap');
+
+/* ══════════ CSS VARS ══════════ */
+:root{
+  --bg:#f0f2f8;
+  --bg2:#e8ebf4;
+  --surface:#ffffff;
+  --surface2:#f6f7fb;
+  --surface3:#eceef6;
+  --border:#d8dce8;
+  --border2:#c5cadc;
+  --a:#2563eb;          /* blue accent */
+  --a-l:#dbeafe;
+  --a-d:#1d4ed8;
+  --g:#059669;          /* green - complete */
+  --g-l:#d1fae5;
+  --y:#d97706;          /* yellow - partial */
+  --y-l:#fef3c7;
+  --r:#dc2626;          /* red/danger */
+  --r-l:#fee2e2;
+  --txt:#0f172a;
+  --txt2:#334155;
+  --muted:#64748b;
+  --sidebar-w:260px;
+  --sidebar-collapsed:64px;
+  --summary-w:320px;
+  --topbar-h:56px;
+  --radius:12px;
+  --radius-sm:8px;
+  --shadow:0 1px 3px rgba(15,23,42,.06),0 4px 12px rgba(15,23,42,.04);
+  --shadow-md:0 4px 20px rgba(37,99,235,.1),0 1px 4px rgba(37,99,235,.06);
+  --shadow-lg:0 20px 60px rgba(15,23,42,.15);
+  --trans:.22s cubic-bezier(.4,0,.2,1);
+  --bounce:.35s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ══════════ RESET & BASE ══════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:'Epilogue',sans-serif;
+  font-size:14px;
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ══════════ PAGE LOAD ANIMATION ══════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.3)}50%{box-shadow:0 0 0 8px rgba(37,99,235,0)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes checkPop{0%{transform:scale(0) rotate(-45deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes toastOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-10px) scale(.95)}}
+@keyframes tabPaneFade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes progressFill{from{width:0}to{width:var(--target-width,0%)}}
+
+/* ══════════ TOPBAR ══════════ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--topbar-h);
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;
+  box-shadow:var(--shadow);
+  animation:fadeUp .4s ease both;
+}
+.topbar-brand{
+  display:flex;align-items:center;gap:10px;
+  padding:0 20px;height:100%;
+  border-right:1px solid var(--border);
+  min-width:var(--sidebar-w);
+  transition:min-width var(--trans);
+  text-decoration:none;
+}
+.body-sidebar-collapsed .topbar-brand{min-width:var(--sidebar-collapsed);}
+.brand-logo{
+  width:32px;height:32px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--a) 0%,#7c3aed 100%);
+  border-radius:9px;display:grid;place-items:center;
+  color:#fff;font-size:15px;
+  box-shadow:0 4px 12px rgba(37,99,235,.35);
+}
+.brand-text{
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  color:var(--txt);letter-spacing:-.5px;white-space:nowrap;
+  overflow:hidden;transition:opacity var(--trans),max-width var(--trans);
+}
+.brand-text span{color:var(--a);}
+.body-sidebar-collapsed .brand-text{max-width:0;opacity:0;overflow:hidden;}
+.topbar-center{flex:1;display:flex;align-items:center;padding:0 20px;gap:14px;}
+
+/* Global progress bar in topbar */
+.global-progress{
+  flex:1;max-width:340px;
+  background:var(--surface3);border-radius:20px;height:6px;overflow:hidden;
+  position:relative;
+}
+.global-progress-fill{
+  height:100%;border-radius:20px;
+  background:linear-gradient(90deg,var(--a),#7c3aed,var(--g));
+  background-size:200% 100%;
+  animation:shimmer 3s linear infinite;
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.global-progress-fill::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:10px;height:10px;border-radius:50%;
+  background:#fff;border:2px solid var(--a);
+  box-shadow:0 0 0 3px rgba(37,99,235,.2);
+}
+.progress-label{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+
+.topbar-right{display:flex;align-items:center;gap:8px;padding-right:16px;}
+.tb-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--radius-sm);
+  font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:all var(--trans);border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--muted);
+  font-family:'Epilogue',sans-serif;
+  white-space:nowrap;
+}
+.tb-btn:hover{border-color:var(--a);color:var(--a);background:var(--a-l);transform:translateY(-1px);}
+.tb-btn.primary{
+  background:linear-gradient(135deg,var(--a),var(--a-d));
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 12px rgba(37,99,235,.3);
+}
+.tb-btn.primary:hover{box-shadow:0 6px 20px rgba(37,99,235,.4);transform:translateY(-2px);}
+
+/* Sidebar toggle btn */
+.sidebar-toggle{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  background:none;border:1.5px solid var(--border);
+  color:var(--muted);cursor:pointer;
+  display:grid;place-items:center;font-size:14px;
+  transition:all var(--trans);flex-shrink:0;margin-left:4px;
+}
+.sidebar-toggle:hover{background:var(--a-l);border-color:var(--a);color:var(--a);}
+
+/* Summary toggle btn with glow */
+.summary-toggle-btn{
+  position:relative;
+}
+.summary-toggle-btn::before{
+  content:'';position:absolute;inset:-3px;border-radius:12px;
+  background:linear-gradient(135deg,var(--a),#7c3aed);
+  opacity:0;z-index:-1;transition:opacity var(--trans);
+}
+.summary-toggle-btn.active::before{opacity:.2;}
+
+/* ══════════ LAYOUT SHELL ══════════ */
+.shell{
+  display:flex;
+  margin-top:var(--topbar-h);
+  min-height:calc(100vh - var(--topbar-h));
+  transition:all var(--trans);
+}
+
+/* ══════════ SIDEBAR NAV ══════════ */
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  position:fixed;
+  top:var(--topbar-h);bottom:0;left:0;
+  overflow:hidden;
+  transition:width var(--trans);
+  z-index:150;
+  display:flex;flex-direction:column;
+  box-shadow:2px 0 12px rgba(15,23,42,.04);
+  animation:slideInLeft .4s .1s ease both;
+}
+.body-sidebar-collapsed .sidebar{width:var(--sidebar-collapsed);}
+.sidebar-inner{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:12px 8px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.sidebar-section-label{
+  font-family:'Syne',sans-serif;
+  font-size:9px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--muted);
+  padding:10px 10px 4px;white-space:nowrap;
+  overflow:hidden;
+  transition:opacity var(--trans);
+}
+.body-sidebar-collapsed .sidebar-section-label{opacity:0;}
+
+/* TAB BUTTON */
+.tab-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:10px;
+  cursor:pointer;transition:all var(--trans);
+  font-size:13px;font-weight:600;color:var(--muted);
+  border:none;background:none;width:100%;text-align:left;
+  position:relative;overflow:hidden;white-space:nowrap;
+  font-family:'Epilogue',sans-serif;
+  margin-bottom:2px;
+}
+.tab-btn::before{
+  content:'';position:absolute;inset:0;border-radius:10px;
+  background:linear-gradient(135deg,var(--a),#7c3aed);
+  opacity:0;transition:opacity var(--trans);
+}
+.tab-btn.active{color:#fff;}
+.tab-btn.active::before{opacity:1;}
+.tab-btn:not(.active):hover{background:var(--surface2);color:var(--txt);}
+
+.tab-ico{
+  width:28px;height:28px;border-radius:7px;
+  display:grid;place-items:center;font-size:13px;
+  flex-shrink:0;transition:all var(--trans);
+  position:relative;z-index:1;
+}
+.tab-btn:not(.active) .tab-ico{background:var(--surface3);color:var(--muted);}
+.tab-btn.active .tab-ico{background:rgba(255,255,255,.2);color:#fff;}
+
+.tab-label{position:relative;z-index:1;flex:1;overflow:hidden;text-overflow:ellipsis;}
+
+/* STATUS DOT — completion indicator */
+.tab-status{
+  width:8px;height:8px;border-radius:50%;
+  flex-shrink:0;position:relative;z-index:1;
+  transition:all var(--bounce);
+}
+.tab-status.none{background:var(--border2);}
+.tab-status.partial{background:var(--y);animation:dotPulse 2s ease-in-out infinite;}
+.tab-status.complete{background:var(--g);}
+.tab-btn.active .tab-status.none{background:rgba(255,255,255,.35);}
+.tab-btn.active .tab-status.partial{background:#fbbf24;}
+.tab-btn.active .tab-status.complete{background:#34d399;}
+
+/* Collapsed: show only icon + status */
+.body-sidebar-collapsed .tab-label,
+.body-sidebar-collapsed .sidebar-section-label{
+  max-width:0;opacity:0;overflow:hidden;
+}
+.body-sidebar-collapsed .tab-btn{justify-content:center;padding:9px;}
+.body-sidebar-collapsed .tab-status{
+  position:absolute;top:6px;right:6px;width:7px;height:7px;
+}
+
+/* Sidebar tooltip on hover when collapsed */
+.body-sidebar-collapsed .tab-btn:hover .tab-label{
+  max-width:none;opacity:1;
+  position:absolute;left:56px;
+  background:var(--txt);color:#fff;
+  padding:5px 10px;border-radius:8px;
+  font-size:12px;
+  pointer-events:none;
+  white-space:nowrap;z-index:999;
+  animation:fadeUp .15s ease;
+  box-shadow:var(--shadow-md);
+}
+
+/* Sidebar footer */
+.sidebar-footer{
+  padding:10px 8px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:6px;
+}
+.sidebar-footer-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:8px;
+  font-size:12.5px;font-weight:600;cursor:pointer;
+  transition:all var(--trans);border:none;background:none;
+  color:var(--muted);width:100%;white-space:nowrap;
+  font-family:'Epilogue',sans-serif;
+}
+.sidebar-footer-btn:hover{background:var(--surface2);color:var(--txt);}
+.sidebar-footer-btn i{font-size:15px;flex-shrink:0;width:28px;text-align:center;}
+.body-sidebar-collapsed .sidebar-footer-btn{justify-content:center;padding:8px;}
+
+/* ══════════ MAIN CONTENT ══════════ */
+.main{
+  flex:1;
+  margin-left:var(--sidebar-w);
+  margin-right:0;
+  transition:margin var(--trans);
+  min-width:0;
+}
+.body-sidebar-collapsed .main{margin-left:var(--sidebar-collapsed);}
+.body-summary-open .main{margin-right:var(--summary-w);}
+
+.tab-content{
+  padding:28px 32px 100px;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+/* Tab pane animation */
+.tab-pane{display:none;}
+.tab-pane.active{
+  display:block;
+  animation:tabPaneFade .3s ease both;
+}
+
+/* ══════════ SUMMARY PANEL ══════════ */
+.summary-panel{
+  position:fixed;top:var(--topbar-h);right:0;bottom:0;
+  width:var(--summary-w);
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  transform:translateX(100%);
+  transition:transform var(--trans);
+  z-index:140;
+  display:flex;flex-direction:column;
+  box-shadow:-4px 0 24px rgba(15,23,42,.08);
+  animation:slideInRight .4s .2s ease both;
+}
+.body-summary-open .summary-panel{transform:translateX(0);}
+.sum-panel-head{
+  padding:16px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);
+  flex-shrink:0;
+}
+.sum-panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--txt);}
+.sum-panel-close{
+  width:28px;height:28px;border-radius:6px;
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:14px;
+  display:grid;place-items:center;
+  transition:all var(--trans);
+}
+.sum-panel-close:hover{background:var(--r-l);color:var(--r);}
+.sum-panel-body{
+  flex:1;overflow-y:auto;padding:14px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+
+/* Summary score ring */
+.sum-score{
+  display:flex;flex-direction:column;align-items:center;
+  padding:18px 0 14px;
+}
+.score-ring{position:relative;width:90px;height:90px;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring circle{transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1);}
+.score-pct{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;
+}
+.score-pct .pct-num{font-size:20px;font-weight:800;color:var(--txt);}
+.score-pct .pct-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.score-status-txt{font-size:12px;font-weight:700;margin-top:8px;}
+
+/* Summary tab checklist */
+.sum-tab-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:8px;
+  margin-bottom:4px;cursor:pointer;
+  transition:all var(--trans);
+}
+.sum-tab-row:hover{background:var(--surface2);}
+.sum-tab-ico{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:10px;flex-shrink:0;}
+.sum-ico-g{background:var(--g-l);color:var(--g);}
+.sum-ico-y{background:var(--y-l);color:var(--y);}
+.sum-ico-n{background:var(--surface3);color:var(--muted);}
+.sum-tab-name{font-size:12.5px;font-weight:600;flex:1;color:var(--txt2);}
+.sum-tab-pct{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--muted);}
+
+.sum-divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+
+/* Summary detail items */
+.sum-detail{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:6px;}
+.sum-detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.sum-detail-val{font-size:13px;font-weight:700;color:var(--txt);margin-top:3px;}
+.sum-detail-val.empty{color:var(--muted);font-weight:400;font-style:italic;font-size:12px;}
+
+/* Alert items */
+.sum-alert{display:flex;gap:7px;padding:8px 10px;border-radius:7px;font-size:11.5px;line-height:1.5;margin-bottom:5px;}
+.sum-alert.warn{background:var(--y-l);color:#78350f;}
+.sum-alert.ok{background:var(--g-l);color:#064e3b;}
+.sum-alert i{flex-shrink:0;font-size:13px;margin-top:1px;}
+
+.sum-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;margin:2px 2px 0 0;}
+.sum-badge.blue{background:var(--a-l);color:var(--a);}
+.sum-badge.green{background:var(--g-l);color:var(--g);}
+.sum-badge.yellow{background:var(--y-l);color:var(--y);}
+
+/* ══════════ PAGE HEADER ══════════ */
+.page-header{margin-bottom:24px;animation:fadeUp .3s ease both;}
+.page-header h1{
+  font-family:'Syne',sans-serif;
+  font-size:26px;font-weight:800;color:var(--txt);letter-spacing:-.6px;
+  position:relative;display:inline-block;
+}
+.page-header h1::after{
+  content:'';position:absolute;bottom:-4px;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--a),#7c3aed);border-radius:2px;
+  transform:scaleX(0);transform-origin:left;
+  animation:scaleX .5s .2s ease forwards;
+}
+@keyframes scaleX{to{transform:scaleX(1)}}
+.page-header p{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6;}
+
+/* Step indicator */
+.step-indicator{
+  display:flex;align-items:center;gap:4px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--muted);
+  margin-bottom:6px;font-weight:500;
+}
+.step-dot{width:6px;height:6px;border-radius:50%;background:var(--a);}
+
+/* ══════════ CARDS ══════════ */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:18px;
+  overflow:hidden;
+  transition:box-shadow var(--trans),transform var(--trans);
+  animation:fadeUp .3s ease both;
+}
+.card:hover{box-shadow:var(--shadow-md);}
+.card-nth-1{animation-delay:.05s}
+.card-nth-2{animation-delay:.1s}
+.card-nth-3{animation-delay:.15s}
+.card-nth-4{animation-delay:.2s}
+
+.card-head{
+  padding:13px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);
+}
+.card-ico{
+  width:30px;height:30px;border-radius:7px;
+  display:grid;place-items:center;font-size:13px;flex-shrink:0;
+}
+.ci-blue{background:var(--a-l);color:var(--a);}
+.ci-green{background:var(--g-l);color:var(--g);}
+.ci-yellow{background:var(--y-l);color:var(--y);}
+.ci-red{background:var(--r-l);color:var(--r);}
+.ci-purple{background:#ede9fe;color:#7c3aed;}
+.card-title{
+  font-family:'Syne',sans-serif;
+  font-size:13px;font-weight:700;color:var(--txt);flex:1;
+}
+.card-badge{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:700;}
+.badge-req{background:var(--a-l);color:var(--a);}
+.badge-opt{background:var(--g-l);color:var(--g);}
+.badge-ux{background:var(--y-l);color:var(--y);}
+.card-body{padding:18px;}
+
+/* Collapsible card */
+.card-head.collapsible{cursor:pointer;user-select:none;}
+.card-head.collapsible:hover{background:var(--surface3);}
+.collapse-chevron{color:var(--muted);transition:transform var(--trans);}
+.card.collapsed .collapse-chevron{transform:rotate(-90deg);}
+.card.collapsed .card-body{display:none;}
+
+/* ══════════ FORM ELEMENTS ══════════ */
+.form-row{display:grid;gap:14px;margin-bottom:14px;}
+.form-row.cols-2{grid-template-columns:1fr 1fr;}
+.form-row.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.form-row.cols-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.form-row.auto{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+
+.field{display:flex;flex-direction:column;gap:5px;}
+.field-label{
+  font-size:10.5px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.req-star{color:var(--r);font-size:12px;}
+.tip-btn{
+  width:15px;height:15px;border-radius:50%;
+  background:var(--surface3);border:1px solid var(--border2);
+  color:var(--muted);cursor:help;display:grid;place-items:center;
+  font-size:9px;transition:all var(--trans);flex-shrink:0;
+  font-style:normal;
+}
+.tip-btn:hover{background:var(--a-l);border-color:var(--a);color:var(--a);}
+/* tooltip popup */
+.tip-btn{position:relative;}
+.tip-popup{
+  position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:var(--txt);color:#fff;border-radius:9px;
+  padding:9px 13px;font-size:11.5px;line-height:1.55;
+  white-space:normal;max-width:260px;min-width:160px;
+  pointer-events:none;z-index:500;
+  opacity:0;transform:translateX(-50%) translateY(5px);
+  transition:opacity .18s,transform .18s;
+  font-weight:500;font-family:'Epilogue',sans-serif;
+  text-transform:none;letter-spacing:0;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+}
+.tip-popup::after{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--txt);
+}
+.tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{
+  opacity:1;transform:translateX(-50%) translateY(0);
+}
+
+.fc,.fs{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--txt);border-radius:var(--radius-sm);
+  font-size:13.5px;font-family:'Epilogue',sans-serif;font-weight:500;
+  padding:9px 12px;width:100%;
+  transition:border-color var(--trans),box-shadow var(--trans),background var(--trans);
+}
+.fc:focus,.fs:focus{
+  border-color:var(--a);box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  outline:none;background:#fff;
+}
+.fc.filled{border-color:var(--g);background:#fafffe;}
+.fc.filled:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(5,150,105,.1);}
+.fc::placeholder{color:var(--muted);font-weight:400;}
+textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+.field-hint{font-size:11.5px;color:var(--muted);line-height:1.5;display:flex;align-items:flex-start;gap:5px;}
+.field-hint i{color:var(--a);flex-shrink:0;margin-top:1px;}
+
+/* ══════════ RADIO PILLS ══════════ */
+.radio-group{display:flex;flex-wrap:wrap;gap:6px;}
+.rpill input[type=radio]{display:none;}
+.rpill label{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:20px;padding:5px 14px;
+  font-size:12.5px;font-weight:600;color:var(--muted);
+  cursor:pointer;transition:all var(--trans);
+  font-family:'Epilogue',sans-serif;
+}
+.rpill input:checked+label{
+  background:var(--a);border-color:var(--a);color:#fff;
+  box-shadow:0 4px 10px rgba(37,99,235,.25);
+  transform:translateY(-1px);
+}
+.rpill label:hover{border-color:var(--a);color:var(--a);}
+
+/* ══════════ TOGGLE SWITCH ══════════ */
+.toggle-row{display:flex;align-items:center;gap:10px;padding:4px 0;}
+.toggle-sw{position:relative;width:38px;height:22px;flex-shrink:0;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-track{
+  position:absolute;inset:0;border-radius:11px;
+  background:var(--border2);cursor:pointer;transition:all var(--trans);
+}
+.toggle-sw input:checked~.toggle-track{background:var(--a);}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:transform var(--bounce);
+  box-shadow:0 1px 4px rgba(0,0,0,.2);pointer-events:none;
+}
+.toggle-sw input:checked~.toggle-track .toggle-thumb{transform:translateX(16px);}
+.toggle-label{font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer;line-height:1.3;}
+
+/* ══════════ DYNAMIC TABLE ══════════ */
+.dt-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border);}
+.dt{width:100%;border-collapse:collapse;min-width:500px;}
+.dt thead th{
+  background:var(--surface2);
+  font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--label,var(--muted));padding:9px 10px;border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+.dt tbody tr{border-bottom:1px solid var(--border);transition:background var(--trans);}
+.dt tbody tr:last-child{border-bottom:none;}
+.dt tbody tr:hover{background:var(--a-l);}
+.dt td{padding:6px 8px;vertical-align:middle;}
+.dt input,.dt select,.dt textarea{
+  background:var(--surface);border:1.5px solid var(--border);
+  color:var(--txt);border-radius:6px;padding:5px 8px;
+  font-size:12.5px;font-family:'Epilogue',sans-serif;font-weight:500;width:100%;
+  transition:border var(--trans);
+}
+.dt input:focus,.dt select:focus{outline:none;border-color:var(--a);}
+.row-num{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-align:center;}
+.drag-handle{color:var(--border2);cursor:grab;font-size:14px;display:block;text-align:center;}
+
+/* ══════════ BUTTONS ══════════ */
+.btn-add{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border:1.5px dashed var(--border2);
+  border-radius:var(--radius-sm);font-size:12.5px;font-weight:700;
+  color:var(--a);background:transparent;cursor:pointer;
+  transition:all var(--trans);font-family:'Epilogue',sans-serif;
+}
+.btn-add:hover{border-color:var(--a);background:var(--a-l);transform:translateY(-1px);}
+.btn-rm{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:4px;border-radius:5px;transition:all var(--trans);font-size:14px;
+}
+.btn-rm:hover{color:var(--r);background:var(--r-l);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--a),var(--a-d));
+  color:#fff;border:none;border-radius:var(--radius-sm);
+  padding:10px 22px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all var(--trans);
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Epilogue',sans-serif;
+  box-shadow:0 4px 14px rgba(37,99,235,.3);
+}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(37,99,235,.4);transform:translateY(-2px);}
+.btn-secondary{
+  background:var(--surface);color:var(--txt2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 18px;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all var(--trans);
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:'Epilogue',sans-serif;
+}
+.btn-secondary:hover{border-color:var(--a);color:var(--a);transform:translateY(-1px);}
+.btn-danger-sm{
+  background:var(--r-l);color:var(--r);border:1px solid rgba(220,38,38,.2);
+  border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;
+  transition:all var(--trans);font-family:'Epilogue',sans-serif;
+}
+.btn-danger-sm:hover{background:#fca5a5;transform:scale(1.02);}
+
+/* Nav arrows */
+.nav-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+
+/* ══════════ INFO ALERTS ══════════ */
+.info-alert,.warn-alert{
+  border-radius:var(--radius-sm);padding:11px 14px;
+  font-size:12.5px;color:var(--txt2);
+  display:flex;gap:9px;line-height:1.55;margin-bottom:14px;
+}
+.info-alert{background:var(--a-l);border:1px solid rgba(37,99,235,.15);}
+.warn-alert{background:var(--y-l);border:1px solid rgba(217,119,6,.2);color:#78350f;}
+.info-alert i,.warn-alert i{flex-shrink:0;font-size:15px;margin-top:1px;}
+.info-alert i{color:var(--a);}
+.warn-alert i{color:var(--y);}
+
+/* ══════════ HF ZONES ══════════ */
+.hf-zone{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;transition:all var(--trans);}
+.hf-zone:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+.hf-zone-head{padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;cursor:pointer;}
+.hf-rh{background:linear-gradient(135deg,#d1fae5,#a7f3d0)!important;color:#065f46;}
+.hf-ph{background:linear-gradient(135deg,#dbeafe,#bfdbfe)!important;color:#1e3a8a;}
+.hf-pf{background:linear-gradient(135deg,#fef3c7,#fde68a)!important;color:#78350f;}
+.hf-rf{background:linear-gradient(135deg,#fee2e2,#fecaca)!important;color:#7f1d1d;}
+.hf-body{padding:16px;border-top:1px solid var(--border);}
+.hf-zone.hf-collapsed .hf-body{display:none;}
+.hf-chevron{margin-left:auto;font-size:12px;transition:transform var(--trans);}
+.hf-zone.hf-collapsed .hf-chevron{transform:rotate(-90deg);}
+
+/* ══════════ SUBREPORT CARDS ══════════ */
+.sr-card{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all var(--trans);}
+.sr-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+.sr-head{padding:11px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sr-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.sr-inline{background:var(--a-l);color:var(--a);}
+.sr-ondemand{background:var(--g-l);color:var(--g);}
+.sr-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);overflow-x:auto;}
+.sr-tab{
+  padding:9px 14px;font-size:12px;font-weight:700;color:var(--muted);
+  border:none;background:none;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all var(--trans);white-space:nowrap;
+  font-family:'Epilogue',sans-serif;
+}
+.sr-tab.active{color:var(--a);border-bottom-color:var(--a);}
+.sr-pane{display:none;padding:16px;}
+.sr-pane.active{display:block;animation:tabPaneFade .25s ease;}
+
+/* ══════════ CONDITION BUILDER ══════════ */
+.cond-group{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;transition:all var(--trans);}
+.cond-group-bar{background:var(--surface2);padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.logic-sel{background:var(--surface);border:1.5px solid var(--border);color:var(--a);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Epilogue',sans-serif;}
+
+/* ══════════ EMPTY STATE ══════════ */
+.es-preview{background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:28px;text-align:center;transition:all var(--trans);}
+.es-icon{font-size:40px;color:var(--muted);margin-bottom:10px;display:block;animation:dotPulse 3s ease-in-out infinite;}
+.es-title{font-size:15px;font-weight:700;color:var(--txt2);margin-bottom:5px;font-family:'Syne',sans-serif;}
+.es-sub{font-size:13px;color:var(--muted);}
+
+/* ══════════ FORMAT CARDS ══════════ */
+.fmt-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;transition:all var(--trans);}
+.fmt-card:hover{border-color:var(--border2);}
+.fmt-card:has(.fmt-cb:checked){border-color:var(--a);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.fmt-head{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--surface2);cursor:pointer;transition:all var(--trans);}
+.fmt-head:hover{background:var(--surface3);}
+.fmt-ico{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-size:14px;flex-shrink:0;}
+.fmt-pdf{background:var(--r-l);color:var(--r);}
+.fmt-xls{background:var(--g-l);color:var(--g);}
+.fmt-doc{background:var(--a-l);color:var(--a);}
+.fmt-csv{background:var(--y-l);color:var(--y);}
+.fmt-name{font-size:13px;font-weight:700;flex:1;color:var(--txt);font-family:'Syne',sans-serif;}
+.fmt-chevron{color:var(--muted);font-size:12px;transition:transform var(--trans);}
+.fmt-body{display:none;padding:16px;border-top:1px solid var(--border);}
+.fmt-body.open{display:block;animation:tabPaneFade .25s ease;}
+
+/* ══════════ TOKEN CHIPS ══════════ */
+.token-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.tchip{
+  font-size:11px;font-family:'JetBrains Mono',monospace;
+  background:var(--a-l);border:1px solid rgba(37,99,235,.2);
+  color:var(--a);border-radius:5px;padding:3px 9px;
+  cursor:pointer;transition:all var(--trans);
+}
+.tchip:hover{background:var(--a);color:#fff;transform:translateY(-1px);}
+.tchip.g{background:var(--g-l);border-color:rgba(5,150,105,.2);color:var(--g);}
+.tchip.g:hover{background:var(--g);color:#fff;}
+.tchip.y{background:var(--y-l);border-color:rgba(217,119,6,.2);color:var(--y);}
+.tchip.y:hover{background:var(--y);color:#fff;}
+
+/* ══════════ FOOTER BAR ══════════ */
+.footer-bar{
+  position:fixed;bottom:0;
+  left:var(--sidebar-w);right:0;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding:10px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  z-index:130;
+  transition:left var(--trans),right var(--trans);
+  box-shadow:0 -4px 20px rgba(15,23,42,.06);
+}
+.body-sidebar-collapsed .footer-bar{left:var(--sidebar-collapsed);}
+.body-summary-open .footer-bar{right:var(--summary-w);}
+.footer-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:10px;}
+.footer-step{background:var(--a-l);color:var(--a);padding:2px 8px;border-radius:20px;font-weight:700;}
+.footer-actions{display:flex;gap:8px;}
+
+/* ══════════ TOAST ══════════ */
+.toast-container{position:fixed;bottom:80px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--txt);color:#fff;border-radius:10px;
+  padding:11px 16px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:var(--shadow-lg);min-width:220px;
+  animation:toastIn .3s var(--bounce) both;
+  font-family:'Epilogue',sans-serif;
+}
+.toast.success{background:var(--g);}
+.toast.warning{background:var(--y);}
+.toast.removing{animation:toastOut .25s ease forwards;}
+
+/* ══════════ MOBILE OVERLAY ══════════ */
+.mobile-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,23,42,.5);z-index:145;
+  backdrop-filter:blur(4px);
+}
+.mobile-menu-btn{
+  display:none;width:36px;height:36px;border-radius:var(--radius-sm);
+  background:none;border:1.5px solid var(--border);
+  color:var(--txt);cursor:pointer;place-items:center;font-size:16px;
+  margin-right:4px;flex-shrink:0;
+}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media(max-width:900px){
+  :root{--sidebar-w:260px;}
+  .sidebar{transform:translateX(-100%);width:var(--sidebar-w)!important;}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .main{margin-left:0!important;}
+  .footer-bar{left:0!important;}
+  .topbar-brand{min-width:auto;}
+  .mobile-menu-btn{display:grid;}
+  .mobile-overlay.open{display:block;}
+  .global-progress{max-width:200px;}
+  .topbar-center .progress-label{display:none;}
+  .tab-content{padding:20px 16px 100px;}
+  .form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr 1fr;}
+  .form-row.cols-2{grid-template-columns:1fr;}
+  .body-summary-open .summary-panel{
+    width:100vw;z-index:300;
+  }
+  .body-summary-open .main{margin-right:0;}
+  .body-summary-open .footer-bar{right:0;}
+}
+@media(max-width:600px){
+  .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr;}
+  .page-header h1{font-size:20px;}
+  .tb-btn span{display:none;}
+  .topbar-right .tb-btn:not(.primary){display:none;}
+  .dt{min-width:400px;}
+}
+
+/* ══════════ SCROLLBAR ══════════ */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* ══════════ CHECKBOX ══════════ */
+input[type=checkbox]{accent-color:var(--a);width:15px;height:15px;cursor:pointer;}
+input[type=color]{border-radius:6px;border:1.5px solid var(--border);cursor:pointer;height:34px;}
+select.fs option{background:#fff;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOPBAR ═══════════════ -->
+<nav class="topbar" id="topbar">
+  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="openMobileMenu()"><i class="bi bi-list"></i></button>
+  <a class="topbar-brand" href="#">
+    <div class="brand-logo"><i class="bi bi-file-earmark-bar-graph"></i></div>
+    <span class="brand-text">Report<span>Forge</span></span>
+  </a>
+  <div class="topbar-center">
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Pokaż/ukryj nawigację">
+      <i class="bi bi-layout-sidebar"></i>
+    </button>
+    <div class="global-progress" title="Postęp wypełnienia formularza">
+      <div class="global-progress-fill" id="globalProgressFill" style="width:0%"></div>
+    </div>
+    <span class="progress-label" id="progressLabel">0% gotowe</span>
+  </div>
+  <div class="topbar-right">
+    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
+  </div>
+</nav>
+
+<!-- ═══════════════ MOBILE OVERLAY ═══════════════ -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+<!-- ═══════════════ SHELL ═══════════════ -->
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-inner" id="sidebarInner">
+      <div class="sidebar-section-label">Definicja raportu</div>
+
+      <button class="tab-btn active" data-tab="t1" onclick="switchTab('t1',this)">
+        <div class="tab-ico"><i class="bi bi-info-circle"></i></div>
+        <span class="tab-label">Informacje ogólne</span>
+        <span class="tab-status none" id="ts-t1"></span>
+      </button>
+      <button class="tab-btn" data-tab="t2" onclick="switchTab('t2',this)">
+        <div class="tab-ico"><i class="bi bi-database"></i></div>
+        <span class="tab-label">Źródło SQL</span>
+        <span class="tab-status none" id="ts-t2"></span>
+      </button>
+      <button class="tab-btn" data-tab="t3" onclick="switchTab('t3',this)">
+        <div class="tab-ico"><i class="bi bi-table"></i></div>
+        <span class="tab-label">Kolumny</span>
+        <span class="tab-status none" id="ts-t3"></span>
+      </button>
+      <button class="tab-btn" data-tab="t4" onclick="switchTab('t4',this)">
+        <div class="tab-ico"><i class="bi bi-sliders"></i></div>
+        <span class="tab-label">Parametry</span>
+        <span class="tab-status none" id="ts-t4"></span>
+      </button>
+      <button class="tab-btn" data-tab="t5" onclick="switchTab('t5',this)">
+        <div class="tab-ico"><i class="bi bi-funnel"></i></div>
+        <span class="tab-label">Filtry</span>
+        <span class="tab-status none" id="ts-t5"></span>
+      </button>
+      <button class="tab-btn" data-tab="t6" onclick="switchTab('t6',this)">
+        <div class="tab-ico"><i class="bi bi-collection"></i></div>
+        <span class="tab-label">Grupowanie</span>
+        <span class="tab-status none" id="ts-t6"></span>
+      </button>
+      <button class="tab-btn" data-tab="t7" onclick="switchTab('t7',this)">
+        <div class="tab-ico"><i class="bi bi-diagram-2"></i></div>
+        <span class="tab-label">Podraporty</span>
+        <span class="tab-status none" id="ts-t7"></span>
+      </button>
+
+      <div class="sidebar-section-label" style="margin-top:8px">Prezentacja</div>
+
+      <button class="tab-btn" data-tab="t8" onclick="switchTab('t8',this)">
+        <div class="tab-ico"><i class="bi bi-layout-text-window"></i></div>
+        <span class="tab-label">Nagłówki / Stopki</span>
+        <span class="tab-status none" id="ts-t8"></span>
+      </button>
+      <button class="tab-btn" data-tab="t9" onclick="switchTab('t9',this)">
+        <div class="tab-ico"><i class="bi bi-inbox"></i></div>
+        <span class="tab-label">Brak danych</span>
+        <span class="tab-status none" id="ts-t9"></span>
+      </button>
+      <button class="tab-btn" data-tab="t10" onclick="switchTab('t10',this)">
+        <div class="tab-ico"><i class="bi bi-box-arrow-up-right"></i></div>
+        <span class="tab-label">Opcje wyjścia</span>
+        <span class="tab-status none" id="ts-t10"></span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="showToast('Szkic zapisany!','success')">
+        <i class="bi bi-save"></i><span class="tab-label">Zapisz szkic</span>
+      </button>
+      <button class="sidebar-footer-btn" onclick="toggleSummary()">
+        <i class="bi bi-eye"></i><span class="tab-label">Podgląd podsumowania</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="tab-content">
+
+      <!-- ══ TAB 1 ══ -->
+      <div class="tab-pane active" id="t1">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 1 z 10</div>
+        <div class="page-header">
+          <h1>Informacje ogólne</h1>
+          <p>Podstawowe metadane identyfikujące raport w systemie, dokumentacji technicznej i backlogu dewelopera.</p>
+        </div>
+
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-tag"></i></div>
+            <span class="card-title">Identyfikacja raportu</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-2">
+              <div class="field">
+                <label class="field-label">Nazwa raportu <span class="req-star">*</span>
+                  <i class="tip-btn">?<span class="tip-popup">Unikalna techniczna nazwa w systemie. Używana jako identyfikator w C# przy ładowaniu .rpt. Bez spacji — użyj camelCase lub podkreśleń.</span></i>
+                </label>
+                <input type="text" class="fc" id="rName" placeholder="np. RaportSprzedazyMiesiecznej" oninput="onFieldChange(this)"/>
+                <div class="field-hint"><i class="bi bi-info-circle"></i>Nazwa pliku .rpt i identyfikator w kodzie</div>
+              </div>
+              <div class="field">
+                <label class="field-label">Tytuł wyświetlany <span class="req-star">*</span>
+                  <i class="tip-btn">?<span class="tip-popup">Tekst widoczny dla użytkownika na wydruku. Może zawierać tokeny CR np. {?Miesiąc} zastępowane dynamicznie.</span></i>
+                </label>
+                <input type="text" class="fc" id="rTitle" placeholder="np. RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" oninput="onFieldChange(this)"/>
+              </div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="field">
+                <label class="field-label">Wersja <i class="tip-btn">?<span class="tip-popup">Semantyczna wersja raportu (SemVer: MAJOR.MINOR.PATCH). Pozwala śledzić historię zmian i robić rollback.</span></i></label>
+                <input type="text" class="fc" id="rVersion" placeholder="1.0.0" oninput="onFieldChange(this)"/>
+              </div>
+              <div class="field">
+                <label class="field-label">Status</label>
+                <select class="fs" id="rStatus" onchange="onFieldChange(this)">
+                  <option>Szkic</option><option>Do weryfikacji</option>
+                  <option>Zatwierdzone</option><option>W realizacji</option>
+                  <option>Zarchiwizowane</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Priorytet <i class="tip-btn">?<span class="tip-popup">Wpływa na kolejność w backlogu. Krytyczny = blokuje inne procesy i wymaga natychmiastowej realizacji.</span></i></label>
+                <select class="fs" id="rPriority" onchange="onFieldChange(this)">
+                  <option>— wybierz —</option><option>Krytyczny 🔴</option>
+                  <option>Wysoki 🟠</option><option>Normalny 🟡</option><option>Niski 🟢</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label class="field-label">Opis / cel raportu <span class="req-star">*</span>
+                  <i class="tip-btn">?<span class="tip-popup">Opisz: dla kogo jest raport, jakie decyzje biznesowe wspiera, jakie dane prezentuje i jak często jest generowany. Trafi do dokumentacji technicznej.</span></i>
+                </label>
+                <textarea class="fc" id="rDesc" placeholder="Opisz przeznaczenie raportu, grupę docelową użytkowników, jakie decyzje biznesowe wspiera oraz jak często będzie generowany..." oninput="onFieldChange(this)"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-purple"><i class="bi bi-people"></i></div>
+            <span class="card-title">Odpowiedzialność i terminy</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Autor <i class="tip-btn">?<span class="tip-popup">Osoba wypełniająca formularz — punkt kontaktu przy pytaniach do specyfikacji.</span></i></label><input type="text" class="fc" placeholder="Imię i nazwisko" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Właściciel biznesowy <i class="tip-btn">?<span class="tip-popup">Dział/osoba zamawiająca. Odpowiedzialna za akceptację wymagań i odbiór końcowy raportu.</span></i></label><input type="text" class="fc" placeholder="Dział / email" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Nr ticketu <i class="tip-btn">?<span class="tip-popup">Numer zadania w JIRA/Azure DevOps. Umożliwia powiązanie dokumentacji z kodem i śledzenie zmian.</span></i></label><input type="text" class="fc" placeholder="np. PROJ-1234" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Data zlecenia</label><input type="date" class="fc" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Termin realizacji</label><input type="date" class="fc" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="field"><label class="field-label">Uwagi i ograniczenia <i class="tip-btn">?<span class="tip-popup">Wszystko czego nie obejmują pozostałe pola: ograniczenia wydajnościowe, zależności, znane wyjątki danych, wymagania bezpieczeństwa.</span></i></label><textarea class="fc" placeholder="np. Raport max 1×/dzień ze względu na wydajność. Dane wrażliwe — dostęp tylko dla roli MANAGER..." oninput="onFieldChange(this)"></textarea></div>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <div></div>
+          <button class="btn-primary" onclick="goTab('t2')">Dalej: Źródło SQL <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 2 ══ -->
+      <div class="tab-pane" id="t2">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 2 z 10</div>
+        <div class="page-header"><h1>Źródło danych (SQL)</h1><p>Zdefiniuj skąd Crystal Reports pobiera dane — widok, procedura składowana lub zapytanie inline.</p></div>
+
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-database"></i></div>
+            <span class="card-title">Konfiguracja połączenia</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field">
+                <label class="field-label">Typ źródła SQL <span class="req-star">*</span>
+                  <i class="tip-btn">?<span class="tip-popup">VIEW = ukrywa SQL przed CR (zalecane). SP = parametryzacja po stronie bazy. Command Object = inline SQL bezpośrednio w CR.</span></i>
+                </label>
+                <select class="fs" id="sqlType" onchange="toggleSqlFields();onFieldChange(this)">
+                  <option value="">— wybierz typ —</option>
+                  <option value="view">Widok (VIEW)</option>
+                  <option value="proc">Procedura składowana (SP)</option>
+                  <option value="fn">Funkcja tabelaryczna (TVF)</option>
+                  <option value="query">Zapytanie SQL inline</option>
+                </select>
+              </div>
+              <div class="field"><label class="field-label">Baza danych / Connection ID <span class="req-star">*</span><i class="tip-btn">?<span class="tip-popup">Nazwa bazy lub klucz Connection String z appsettings.json. Programista użyje tej nazwy w kodzie C#.</span></i></label><input type="text" class="fc" placeholder="np. DB_PRODUKCJA" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Schema <i class="tip-btn">?<span class="tip-popup">Schema bazodanowa — domyślnie 'dbo' w SQL Server. Ważne gdy baza ma wiele schematów: dbo, reporting, hr.</span></i></label><input type="text" class="fc" placeholder="dbo" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="field" id="sqlObjField" style="display:none;margin-bottom:14px">
+              <label class="field-label">Nazwa obiektu (VIEW / SP / Funkcja) <i class="tip-btn">?<span class="tip-popup">Pełna kwalifikowana nazwa: schema.nazwa np. dbo.v_Sprzedaz. Programista wpisze to w CR Database Expert.</span></i></label>
+              <input type="text" class="fc mono" placeholder="np. dbo.v_RaportSprzedazy" oninput="onFieldChange(this)"/>
+            </div>
+            <div class="field" id="sqlInlineField" style="display:none;margin-bottom:14px">
+              <label class="field-label">Zapytanie SQL <i class="tip-btn">?<span class="tip-popup">Wpisane bezpośrednio w CR Command Object. Użyj {?PARAMETR} dla parametrów CR. Elastyczne ale trudniejsze w utrzymaniu.</span></i></label>
+              <textarea class="fc mono" rows="5" placeholder="SELECT&#10;  kol1, kol2, kol3&#10;FROM dbo.Tabela t&#10;  INNER JOIN dbo.Inna i ON t.id = i.fk&#10;WHERE t.data >= {?DataOd}" oninput="onFieldChange(this)"></textarea>
+              <div class="field-hint"><i class="bi bi-info-circle"></i>Placeholdery {?NazwaParametru} zastępowane przez CR w runtime.</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Opis logiki biznesowej <i class="tip-btn">?<span class="tip-popup">Opisz co zwraca to źródło w języku biznesowym. Nie technicznie. Trafi do dokumentacji.</span></i></label>
+              <textarea class="fc" placeholder="np. Widok łączy tabele Zamówienia, Klienci i Produkty. Zwraca faktury sprzedaży z danego okresu z rozbijem na kategorie..." oninput="onFieldChange(this)"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-toggles"></i></div>
+            <span class="card-title">Dodatkowe opcje</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" id="swCR"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Command mode (CR Command Object) <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">SQL bezpośrednio w CR bez widoku w bazie. Wygodne jednorazowo, trudniejsze długoterminowo.</span></i></span></div>
+              <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" id="swLinked"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Wiele tabel z linkowaniem <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">CR łączy tabele przez Database Expert → Links. Mniej wydajne niż JOIN w SQL.</span></i></span></div>
+              <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" id="swLimit"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Ogranicz liczbę wierszy <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">CR Max Rows to Retrieve. Wartość 0 = brak limitu. To nie SQL TOP — CR pobiera wszystko i przycina po stronie klienta.</span></i></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t1')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t3')">Dalej: Kolumny <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 3 ══ -->
+      <div class="tab-pane" id="t3">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 3 z 10</div>
+        <div class="page-header"><h1>Kolumny raportu</h1><p>Zdefiniuj każdą kolumnę — pole DB, nagłówek, typ, format i reguły formatowania warunkowego.</p></div>
+
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-fonts"></i></div>
+            <span class="card-title">Tryb nagłówków kolumn</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="radio-group mb-2">
+              <div class="rpill"><input type="radio" name="hm" id="hm1" value="static" checked onchange="setHM('static')"><label for="hm1">Statyczne</label></div>
+              <div class="rpill"><input type="radio" name="hm" id="hm2" value="param" onchange="setHM('param')"><label for="hm2">Z parametru CR ({?X})</label></div>
+              <div class="rpill"><input type="radio" name="hm" id="hm3" value="formula" onchange="setHM('formula')"><label for="hm3">Z formuły CR ({@X})</label></div>
+              <div class="rpill"><input type="radio" name="hm" id="hm4" value="mixed" onchange="setHM('mixed')"><label for="hm4">Mieszany (per kolumna)</label></div>
+            </div>
+            <div class="field-hint" id="hmHint"><i class="bi bi-info-circle"></i>Statyczny nagłówek to stały tekst w CR Designer — nie zmienia się w runtime.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-columns-gap"></i></div>
+            <span class="card-title">Definicja kolumn</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="dt-wrap">
+              <table class="dt" id="colTable">
+                <thead><tr>
+                  <th></th><th>#</th>
+                  <th>Pole DB / formuła <i class="tip-btn" style="font-size:9px">?<span class="tip-popup">Nazwa pola z widoku/SP lub formuły CR np. {@NazwaFormuly}. Musi dokładnie odpowiadać kolumnie.</span></i></th>
+                  <th>Nagłówek</th><th>Typ danych</th><th>Format / maska</th>
+                  <th>Widoczna</th><th>Sumować</th><th>Wyrów.</th><th>CF</th><th></th>
+                </tr></thead>
+                <tbody id="colBody">
+                  <tr>
+                    <td><span class="drag-handle"><i class="bi bi-grip-vertical"></i></span></td>
+                    <td class="row-num">1</td>
+                    <td><input type="text" class="mono" placeholder="total_amount"/></td>
+                    <td><input type="text" placeholder="Wartość"/></td>
+                    <td><select><option>—</option><option>String</option><option>Number</option><option>Currency</option><option>Date</option><option>DateTime</option><option>Boolean</option><option>Percent</option><option>Formula</option></select></td>
+                    <td><input type="text" placeholder="#,##0.00"/></td>
+                    <td style="text-align:center"><input type="checkbox" checked/></td>
+                    <td style="text-align:center"><input type="checkbox"/></td>
+                    <td><select><option>L</option><option>Ś</option><option>P</option></select></td>
+                    <td><select><option>Brak</option><option>Kolor</option><option>Tło</option><option>Bold</option><option>Wiele</option></select></td>
+                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn-add" onclick="addColRow()"><i class="bi bi-plus-lg"></i>Dodaj kolumnę</button>
+              <button class="btn-add" onclick="addFormulaCol()"><i class="bi bi-calculator"></i>Formula Field</button>
+              <button class="btn-add" onclick="addRunningTotal()"><i class="bi bi-123"></i>Running Total</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-nth-3">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-yellow"><i class="bi bi-palette"></i></div>
+            <span class="card-title">Formatowanie warunkowe (Conditional Formatting)</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="info-alert"><i class="bi bi-info-circle"></i>CR Highlighting Expert — reguły zmieniające kolor/styl komórek na podstawie wartości np. ujemne = czerwone.</div>
+            <div class="dt-wrap">
+              <table class="dt" id="cfTable">
+                <thead><tr><th>#</th><th>Kolumna</th><th>Warunek CR <i class="tip-btn" style="font-size:9px">?<span class="tip-popup">Formuła CR np. {pole} &lt; 0 lub {pole} &gt; {?Prog}. Odwołuje się do pól i parametrów.</span></i></th><th>Efekt</th><th>Kolor tekstu</th><th>Kolor tła</th><th>Styl</th><th>Opis</th><th></th></tr></thead>
+                <tbody id="cfBody">
+                  <tr>
+                    <td class="row-num">1</td>
+                    <td><input type="text" placeholder="total_amount" class="mono"/></td>
+                    <td><input type="text" placeholder="{total_amount} &lt; 0" class="mono"/></td>
+                    <td><select><option>Kolor tekstu</option><option>Kolor tła</option><option>Oba</option><option>Bold</option><option>Kursywa</option></select></td>
+                    <td><input type="color" value="#dc2626"/></td>
+                    <td><input type="color" value="#fee2e2"/></td>
+                    <td><select><option>Normal</option><option>Bold</option><option>Italic</option></select></td>
+                    <td><input type="text" placeholder="Wartość ujemna"/></td>
+                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn-add mt-3" onclick="addCFRow()"><i class="bi bi-plus-lg"></i>Dodaj regułę CF</button>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t2')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t4')">Dalej: Parametry <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 4 ══ -->
+      <div class="tab-pane" id="t4">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 4 z 10</div>
+        <div class="page-header"><h1>Parametry CR</h1><p>Parametry przekazywane z kodu C# przez <code style="font-family:'JetBrains Mono',monospace;background:var(--a-l);padding:1px 6px;border-radius:4px;color:var(--a)">SetParameterValue()</code> przy uruchamianiu raportu.</p></div>
+        <div class="info-alert"><i class="bi bi-info-circle"></i>Każdy parametr musi być ustawiony przed wywołaniem <code style="font-family:'JetBrains Mono',monospace">report.SetParameterValue("Nazwa", wartość)</code>. Kontrolki UI w Razor Pages automatycznie mapowane na parametry.</div>
+        <div class="card card-nth-1">
+          <div class="card-head"><div class="card-ico ci-blue"><i class="bi bi-sliders"></i></div><span class="card-title">Lista parametrów</span></div>
+          <div class="card-body">
+            <div class="dt-wrap">
+              <table class="dt">
+                <thead><tr><th>#</th><th>Nazwa CR <i class="tip-btn" style="font-size:9px">?<span class="tip-popup">Bez {?}. Identyczna z argumentem SetParameterValue(). Bez spacji i polskich znaków.</span></i></th><th>Typ</th><th>Domyślna <i class="tip-btn" style="font-size:9px">?<span class="tip-popup">Wartość gdy użytkownik nie poda własnej. {dziś-30d} = aktualna data minus 30 dni.</span></i></th><th>Wymagany</th><th>Multi</th><th>Kontrolka UI</th><th>LOV SQL</th><th>Opis</th><th></th></tr></thead>
+                <tbody id="paramBody">
+                  <tr>
+                    <td class="row-num">1</td>
+                    <td><input type="text" placeholder="DataOd" class="mono"/></td>
+                    <td><select><option>—</option><option>String</option><option>Number</option><option>Date</option><option>DateTime</option><option>Boolean</option></select></td>
+                    <td><input type="text" placeholder="{dziś-30d}"/></td>
+                    <td style="text-align:center"><input type="checkbox"/></td>
+                    <td style="text-align:center"><input type="checkbox"/></td>
+                    <td><select><option>DatePicker</option><option>TextBox</option><option>Dropdown</option><option>MultiSelect</option><option>Ukryta</option></select></td>
+                    <td><input type="text" class="mono" placeholder="SELECT id,nazwa FROM..."/></td>
+                    <td><input type="text" placeholder="Opis"/></td>
+                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn-add mt-3" onclick="addParamRow()"><i class="bi bi-plus-lg"></i>Dodaj parametr</button>
+          </div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t3')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t5')">Dalej: Filtry <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 5 ══ -->
+      <div class="tab-pane" id="t5">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 5 z 10</div>
+        <div class="page-header"><h1>Filtry i selekcja</h1><p>Warunki filtrowania na poziomie SQL WHERE lub CR Record Selection Formula.</p></div>
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-layers"></i></div>
+            <span class="card-title">Strategia filtrowania</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="radio-group">
+              <div class="rpill"><input type="radio" name="fs" id="fs1" checked><label for="fs1">SQL WHERE (push-down)</label></div>
+              <div class="rpill"><input type="radio" name="fs" id="fs2"><label for="fs2">CR Record Selection</label></div>
+              <div class="rpill"><input type="radio" name="fs" id="fs3"><label for="fs3">Oba poziomy</label></div>
+              <div class="rpill"><input type="radio" name="fs" id="fs4"><label for="fs4">CR Group Selection</label></div>
+            </div>
+            <div class="field-hint mt-2"><i class="bi bi-info-circle"></i><strong>SQL WHERE</strong> = filtruje w bazie (wydajne). <strong>CR Selection</strong> = po stronie CR — gdy nie możesz modyfikować bazy. <strong>Group Selection</strong> = odpowiednik HAVING.</div>
+          </div>
+        </div>
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-diagram-3"></i></div>
+            <span class="card-title">Builder warunków (AND/OR)</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div id="filterGroups"></div>
+            <button class="btn-add" onclick="addFilterGroup()"><i class="bi bi-plus-square"></i>Dodaj grupę AND/OR</button>
+          </div>
+        </div>
+        <div class="card card-nth-3">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-code-square"></i></div>
+            <span class="card-title">CR Selection Formula (ręczna)</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="field mb-3">
+              <label class="field-label">CR Record Selection Formula <i class="tip-btn">?<span class="tip-popup">Nadpisuje builder. Składnia Crystal Syntax. Widoczna w CR Designer → Report → Edit Selection Formula → Record.</span></i></label>
+              <textarea class="fc mono" rows="3" placeholder='{Orders.OrderDate} in {?DataOd} to {?DataDo} and {Orders.Status} = "AKTYWNY"'></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">CR Group Selection Formula <i class="tip-btn">?<span class="tip-popup">Filtruje grupy po agregacji — odpowiednik SQL HAVING. CR Designer → Report → Edit Selection Formula → Group.</span></i></label>
+              <textarea class="fc mono" rows="2" placeholder="Sum({Orders.Kwota}, {Orders.Kategoria}) > 10000"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t4')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t6')">Dalej: Grupowanie <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 6 ══ -->
+      <div class="tab-pane" id="t6">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 6 z 10</div>
+        <div class="page-header"><h1>Grupowanie i sortowanie</h1><p>Hierarchia grupowania CR — Group Headers, Footers i podsumowania per poziom.</p></div>
+        <div class="card card-nth-1">
+          <div class="card-head"><div class="card-ico ci-yellow"><i class="bi bi-collection"></i></div><span class="card-title">Poziomy grupowania</span></div>
+          <div class="card-body">
+            <div class="info-alert"><i class="bi bi-info-circle"></i>Grupy są hierarchiczne — Grupa 1 jest nadrzędna. CR automatycznie tworzy Group Header i Footer. Maks. 5 poziomów.</div>
+            <div class="dt-wrap">
+              <table class="dt">
+                <thead><tr><th>#</th><th>Pole grupowania</th><th>Kolejność</th><th>Podsumowanie</th><th>Pole sumy</th><th>PageBreak</th><th>Ukryj detal</th><th>Nagłówek</th><th>Stopka</th><th></th></tr></thead>
+                <tbody id="groupBody">
+                  <tr>
+                    <td class="row-num">1</td>
+                    <td><input type="text" placeholder="kategoria" class="mono"/></td>
+                    <td><select><option>ASC</option><option>DESC</option><option>Custom</option></select></td>
+                    <td><select><option>Brak</option><option>SUM</option><option>COUNT</option><option>AVG</option><option>MIN</option><option>MAX</option></select></td>
+                    <td><input type="text" placeholder="pole_kwota" class="mono"/></td>
+                    <td style="text-align:center"><input type="checkbox"/></td>
+                    <td style="text-align:center"><input type="checkbox"/></td>
+                    <td><input type="text" placeholder="Kategoria: {pole}"/></td>
+                    <td><input type="text" placeholder="Razem: {SUM}"/></td>
+                    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn-add mt-3" onclick="addGroupRow()"><i class="bi bi-plus-lg"></i>Dodaj poziom grupowania</button>
+          </div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t5')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t7')">Dalej: Podraporty <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 7 ══ -->
+      <div class="tab-pane" id="t7">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 7 z 10</div>
+        <div class="page-header"><h1>Podraporty (Subreports)</h1><p>Osadzone raporty z własnym źródłem danych, powiązane z raportem głównym przez SubreportLinks.</p></div>
+        <div class="form-row cols-2 mb-3">
+          <div class="info-alert m-0"><i class="bi bi-check-circle"></i><div><strong>Kiedy używać:</strong> inne źródło danych, inna granularność (nagłówek + pozycje), drill-down on-demand.</div></div>
+          <div class="warn-alert m-0"><i class="bi bi-exclamation-triangle"></i><div><strong>Uwaga wydajnościowa:</strong> każdy SR = osobne zapytanie SQL. Rozważ JOIN lub PIVOT zamiast podraportu.</div></div>
+        </div>
+        <div id="subreportList"></div>
+        <button class="btn-add" onclick="addSubreport()"><i class="bi bi-plus-lg"></i>Dodaj podraport</button>
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t6')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t8')">Dalej: Nagłówki/Stopki <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 8 ══ -->
+      <div class="tab-pane" id="t8">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 8 z 10</div>
+        <div class="page-header"><h1>Nagłówki i stopki</h1><p>Skonfiguruj 4 strefy CR: Report Header, Page Header, Page Footer, Report Footer.</p></div>
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-braces"></i></div>
+            <span class="card-title">Tokeny dynamiczne</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="field-hint mb-2"><i class="bi bi-info-circle"></i>Kliknij token aby wstawić do ostatnio aktywnego pola tekstowego.</div>
+            <div class="token-chips">
+              <span class="tchip" onclick="insertToken('{PageNumber}')">{PageNumber}</span>
+              <span class="tchip" onclick="insertToken('{TotalPages}')">{TotalPages}</span>
+              <span class="tchip" onclick="insertToken('{PrintDate}')">{PrintDate}</span>
+              <span class="tchip" onclick="insertToken('{PrintTime}')">{PrintTime}</span>
+              <span class="tchip" onclick="insertToken('{ReportName}')">{ReportName}</span>
+              <span class="tchip g" onclick="insertToken('{?DataOd}')">{?DataOd}</span>
+              <span class="tchip g" onclick="insertToken('{?DataDo}')">{?DataDo}</span>
+              <span class="tchip g" onclick="insertToken('{?Użytkownik}')">{?Użytkownik}</span>
+              <span class="tchip y" onclick="insertToken('{@TytułRaportu}')">{@TytułRaportu}</span>
+              <span class="tchip y" onclick="insertToken('{@NazwaFirmy}')">{@NazwaFirmy}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Header -->
+        <div class="hf-zone">
+          <div class="hf-zone-head hf-rh" onclick="toggleHF(this)">
+            <i class="bi bi-file-earmark-text"></i><strong>Report Header</strong> — raz, na początku pierwszej strony
+            <i class="bi bi-chevron-down hf-chevron"></i>
+          </div>
+          <div class="hf-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Główny tytuł <span class="req-star">*</span> <i class="tip-btn">?<span class="tip-popup">Tytuł widoczny na początku raportu — duża czcionka, raz. Może zawierać tokeny CR.</span></i></label><input type="text" class="fc" id="rhTitle" placeholder="RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Podtytuł / zakres <i class="tip-btn">?<span class="tip-popup">Linia pod tytułem — zakres dat, aktywne filtry.</span></i></label><input type="text" class="fc" placeholder="Okres: {?DataOd} — {?DataDo}" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Logo firmy</label><select class="fs"><option>Brak</option><option>Embedded w .rpt</option><option>Dynamiczne (BLOB)</option><option>Ścieżka UNC</option></select></div>
+              <div class="field"><label class="field-label">Pozycja logo</label><select class="fs"><option>Lewy górny</option><option>Prawy górny</option><option>Środek</option></select></div>
+              <div class="field"><label class="field-label">RH na osobnej stronie</label><select class="fs"><option>Nie</option><option>Tak (New Page After)</option></select></div>
+            </div>
+            <div class="field"><label class="field-label">Elementy dodatkowe <i class="tip-btn">?<span class="tip-popup">Nota prawna, klauzula poufności, numer wersji, dział zamawiający.</span></i></label><textarea class="fc" rows="2" placeholder="np. Dokument poufny — do użytku wewnętrznego. Dział: Sprzedaż." oninput="onFieldChange(this)"></textarea></div>
+          </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="hf-zone">
+          <div class="hf-zone-head hf-ph" onclick="toggleHF(this)">
+            <i class="bi bi-layout-text-window"></i><strong>Page Header</strong> — powtarzany na każdej stronie
+            <i class="bi bi-chevron-down hf-chevron"></i>
+          </div>
+          <div class="hf-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Lewo</label><input type="text" class="fc" placeholder="ABC Sp. z o.o." oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Środek</label><input type="text" class="fc" placeholder="Raport Sprzedaży" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Prawo</label><input type="text" class="fc" placeholder="Wydrukowano: {PrintDate}" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Linia oddzielająca</label><select class="fs"><option>Brak</option><option>Cienka</option><option>Gruba</option><option>Podwójna</option></select></div>
+              <div class="field"><label class="field-label">Nagłówki kolumn w PH</label><select class="fs"><option>Powtarzaj na każdej stronie</option><option>Tylko pierwsza strona</option><option>Nie</option></select></div>
+            </div>
+            <div class="toggle-row"><label class="toggle-sw"><input type="checkbox"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Ukryj PH na pierwszej stronie <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">Suppress PH on first page — bo pierwsza strona ma już Report Header. CR: {PageNumber} = 1 → Suppress.</span></i></span></div>
+          </div>
+        </div>
+
+        <!-- Page Footer -->
+        <div class="hf-zone">
+          <div class="hf-zone-head hf-pf" onclick="toggleHF(this)">
+            <i class="bi bi-layout-text-window-reverse"></i><strong>Page Footer</strong> — powtarzany na każdej stronie
+            <i class="bi bi-chevron-down hf-chevron"></i>
+          </div>
+          <div class="hf-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Lewo</label><input type="text" class="fc" placeholder="© 2024 Firma" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Środek</label><input type="text" class="fc" placeholder="Poufne" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Prawo (numeracja) <i class="tip-btn">?<span class="tip-popup">Format numeracji stron. {PageNumber} i {TotalPages} są polami CR.</span></i></label><input type="text" class="fc" placeholder="Strona {PageNumber} / {TotalPages}" oninput="onFieldChange(this)"/></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Footer -->
+        <div class="hf-zone">
+          <div class="hf-zone-head hf-rf" onclick="toggleHF(this)">
+            <i class="bi bi-file-earmark-check"></i><strong>Report Footer</strong> — raz, po wszystkich danych (ostatnia strona)
+            <i class="bi bi-chevron-down hf-chevron"></i>
+          </div>
+          <div class="hf-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Tekst podsumowujący <i class="tip-btn">?<span class="tip-popup">Tekst na końcu raportu np. "Koniec raportu. Liczba rekordów: {RecordCount}."</span></i></label><textarea class="fc" rows="2" placeholder="Koniec raportu. Liczba rekordów: {RecordCount}." oninput="onFieldChange(this)"></textarea></div>
+              <div class="field"><label class="field-label">Agregaty globalne <i class="tip-btn">?<span class="tip-popup">Podsumowanie finansowe całego raportu. CR Summary Fields dostępne automatycznie.</span></i></label><textarea class="fc" rows="2" placeholder="SUMA: {SUM_kwota}  |  LICZBA: {COUNT}" oninput="onFieldChange(this)"></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t7')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t9')">Dalej: Brak danych <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 9 ══ -->
+      <div class="tab-pane" id="t9">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 9 z 10</div>
+        <div class="page-header"><h1>Zachowanie przy braku danych</h1><p>Zdefiniuj co widzi użytkownik gdy zapytanie nie zwróci żadnych rekordów.</p></div>
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-red"><i class="bi bi-sliders"></i></div>
+            <span class="card-title">Strategia</span>
+            <span class="card-badge badge-ux">UX</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="radio-group">
+              <div class="rpill"><input type="radio" name="em" id="em1" checked><label for="em1">Komunikat w CR</label></div>
+              <div class="rpill"><input type="radio" name="em" id="em2"><label for="em2">Pusta tabela z nagłówkami</label></div>
+              <div class="rpill"><input type="radio" name="em" id="em3"><label for="em3">Komunikat w UI</label></div>
+              <div class="rpill"><input type="radio" name="em" id="em4"><label for="em4">Przekieruj do błędu</label></div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-red"><i class="bi bi-chat-square-text"></i></div>
+            <span class="card-title">Treść komunikatu</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Główny tekst <i class="tip-btn">?<span class="tip-popup">Krótki, jasny komunikat dla użytkownika. Max 1-2 zdania. Bez technicznego żargonu.</span></i></label><input type="text" class="fc" id="emptyMsg" placeholder="Brak danych dla wybranych kryteriów." oninput="updateEmptyPreview()"/></div>
+              <div class="field"><label class="field-label">Ikona</label><select class="fs" id="emptyIcon" onchange="updateEmptyPreview()"><option value="bi-inbox">📭 Folder pusty</option><option value="bi-search">🔍 Brak wyników</option><option value="bi-exclamation-circle">⚠️ Ostrzeżenie</option><option value="bi-database-x">💾 Brak danych</option></select></div>
+            </div>
+            <div class="field mb-3"><label class="field-label">Wskazówka <i class="tip-btn">?<span class="tip-popup">Podpowiedź co zrobić — zmień filtry, skontaktuj się z adminem, sprawdź datę.</span></i></label><input type="text" class="fc" id="emptyHint" placeholder="Spróbuj poszerzyć zakres dat lub zmienić kryteria." oninput="updateEmptyPreview()"/></div>
+            <div class="es-preview" id="emptyPreview">
+              <span class="es-icon"><i class="bi bi-inbox"></i></span>
+              <div class="es-title">Brak danych dla wybranych kryteriów.</div>
+              <div class="es-sub">Spróbuj poszerzyć zakres dat lub zmienić kryteria.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t8')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="goTab('t10')">Dalej: Opcje wyjścia <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- ══ TAB 10 ══ -->
+      <div class="tab-pane" id="t10">
+        <div class="step-indicator"><div class="step-dot"></div>Krok 10 z 10 — Ostatni krok!</div>
+        <div class="page-header"><h1>Opcje wyjścia i eksport</h1><p>Zdefiniuj obsługiwane formaty eksportu z indywidualnymi ustawieniami dla każdego.</p></div>
+
+        <div class="card card-nth-1">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-file-earmark-arrow-down"></i></div>
+            <span class="card-title">Formaty eksportu</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body" id="fmtContainer">
+            <!-- PDF -->
+            <div class="fmt-card">
+              <div class="fmt-head" onclick="toggleFmt(this)">
+                <div class="fmt-ico fmt-pdf"><i class="bi bi-filetype-pdf"></i></div>
+                <span class="fmt-name">PDF</span>
+                <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
+                </div>
+                <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
+              </div>
+              <div class="fmt-body open">
+                <div class="form-row auto">
+                  <div class="field"><label class="field-label">Orientacja <i class="tip-btn">?<span class="tip-popup">Auto = CR dobiera wg szerokości. Landscape dla szerokich tabel.</span></i></label><select class="fs"><option>Portrait</option><option>Landscape</option><option>Auto</option></select></div>
+                  <div class="field"><label class="field-label">Papier</label><select class="fs"><option>A4</option><option>A3</option><option>Letter</option><option>Legal</option></select></div>
+                  <div class="field"><label class="field-label">Marginesy G/P/D/L (mm) <i class="tip-btn">?<span class="tip-popup">CR: File → Page Setup → Margins. Standard: 10/10/10/10.</span></i></label><input type="text" class="fc" placeholder="10/10/10/10"/></div>
+                  <div class="field"><label class="field-label">Wersja PDF <i class="tip-btn">?<span class="tip-popup">PDF/A-1b = standard archiwizacyjny wymagany w administracji publicznej. Wymaga osadzenia czcionek.</span></i></label><select class="fs"><option>PDF 1.4 (domyślny CR)</option><option>PDF/A-1b (archiwizacja)</option><option>PDF/A-2</option></select></div>
+                  <div class="field"><label class="field-label">DPI <i class="tip-btn">?<span class="tip-popup">96=ekran, 300=druk, 600=druk profesjonalny. Dla tekstowych raportów 150 DPI wystarczy.</span></i></label><select class="fs"><option>96 DPI</option><option>150 DPI</option><option>300 DPI</option><option>600 DPI</option></select></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy <i class="tip-btn">?<span class="tip-popup">Programista interpoluje tokeny w C# przed ExportToStream.</span></i></label><input type="text" class="fc mono" placeholder="Raport_{?Miesiąc}_{PrintDate}.pdf"/></div>
+                </div>
+              </div>
+            </div>
+            <!-- Excel -->
+            <div class="fmt-card">
+              <div class="fmt-head" onclick="toggleFmt(this)">
+                <div class="fmt-ico fmt-xls"><i class="bi bi-filetype-xlsx"></i></div>
+                <span class="fmt-name">Excel (.xlsx)</span>
+                <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
+                </div>
+                <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
+              </div>
+              <div class="fmt-body">
+                <div class="form-row auto">
+                  <div class="field"><label class="field-label">Format Excel <i class="tip-btn">?<span class="tip-popup">Data Only = surowe dane bez formatowania CR — lepsza edytowalność w Excel.</span></i></label><select class="fs"><option>XLSX</option><option>XLSX Data Only</option><option>XLS</option></select></div>
+                  <div class="field"><label class="field-label">Arkusz</label><input type="text" class="fc" placeholder="Dane lub {?Miesiąc}"/></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport_{PrintDate}.xlsx"/></div>
+                </div>
+                <div class="form-row cols-3" style="margin-top:10px">
+                  <div class="toggle-row"><label class="toggle-sw"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">AutoFilter <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">Rozwijane filtry Excel. Implementacja przez EPPlus/ClosedXML po eksporcie CR.</span></i></span></div>
+                  <div class="toggle-row"><label class="toggle-sw"><input type="checkbox"><div class="toggle-track"><div class="toggle-thumb"></div></div></label><span class="toggle-label">Freeze nagłówka <i class="tip-btn" style="vertical-align:middle">?<span class="tip-popup">Freeze Pane = zamrożenie pierwszego wiersza. EPPlus v5+.</span></i></span></div>
+                </div>
+              </div>
+            </div>
+            <!-- CSV -->
+            <div class="fmt-card">
+              <div class="fmt-head" onclick="toggleFmt(this)">
+                <div class="fmt-ico fmt-csv"><i class="bi bi-filetype-csv"></i></div>
+                <span class="fmt-name">CSV / Tekst</span>
+                <div style="display:flex;align-items:center;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
+                  <label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" onchange="onFieldChange(this)"><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label>
+                  <span style="font-size:12px;font-weight:600;color:var(--muted)">Aktywny</span>
+                </div>
+                <i class="bi bi-chevron-down fmt-chevron ms-2"></i>
+              </div>
+              <div class="fmt-body">
+                <div class="form-row auto">
+                  <div class="field"><label class="field-label">Separator <i class="tip-btn">?<span class="tip-popup">Średnik (;) = standard PL Excel. Przecinek (,) = EN. Tabulator dla legacy.</span></i></label><select class="fs"><option>Średnik (;)</option><option>Przecinek (,)</option><option>Tabulator (\t)</option><option>Pionowa kreska (|)</option></select></div>
+                  <div class="field"><label class="field-label">Encoding <i class="tip-btn">?<span class="tip-popup">UTF-8 BOM = zalecane dla polskich znaków w Excel. BOM = Excel wykrywa kodowanie automatycznie.</span></i></label><select class="fs"><option>UTF-8 BOM</option><option>UTF-8</option><option>Windows-1250</option></select></div>
+                  <div class="field"><label class="field-label">Format daty</label><input type="text" class="fc" placeholder="yyyy-MM-dd"/></div>
+                  <div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport_{PrintDate}.csv"/></div>
+                </div>
+              </div>
+            </div>
+            <button class="btn-add mt-3" onclick="addFmtCard()"><i class="bi bi-plus-lg"></i>Dodaj format</button>
+          </div>
+        </div>
+
+        <div class="card card-nth-2">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-gear"></i></div>
+            <span class="card-title">Ogólne opcje dostarczania</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Domyślny format</label><select class="fs" onchange="onFieldChange(this)"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
+              <div class="field"><label class="field-label">Widoczność <i class="tip-btn">?<span class="tip-popup">Podgląd = CrystalReportViewer w Razor Page. Tylko eksport = bezpośrednie pobranie bez podglądu.</span></i></label><select class="fs"><option>Podgląd w przeglądarce</option><option>Tylko eksport</option><option>Oba tryby</option></select></div>
+              <div class="field"><label class="field-label">Harmonogram <i class="tip-btn">?<span class="tip-popup">Automatyczne generowanie. Wymaga Hangfire, Quartz.NET lub Windows Scheduler.</span></i></label><select class="fs"><option>Na żądanie</option><option>Codziennie</option><option>Co tydzień</option><option>Ostatni dzień miesiąca</option><option>Niestandardowy (CRON)</option></select></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-actions">
+          <button class="btn-secondary" onclick="goTab('t9')"><i class="bi bi-arrow-left"></i> Wróć</button>
+          <button class="btn-primary" onclick="toggleSummary();showToast('Definicja gotowa! Sprawdź podsumowanie.','success')"><i class="bi bi-check-circle"></i>Zakończ i podgląd</button>
+        </div>
+      </div>
+
+    </div><!-- end .tab-content -->
+  </main>
+
+  <!-- ═══ SUMMARY PANEL ═══ -->
+  <aside class="summary-panel" id="summaryPanel">
+    <div class="sum-panel-head">
+      <span class="sum-panel-title"><i class="bi bi-clipboard-data me-2"></i>Podsumowanie</span>
+      <button class="sum-panel-close" onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="sum-panel-body" id="sumPanelBody">
+      <div class="sum-score">
+        <div class="score-ring">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+            <circle id="scoreCircle" cx="45" cy="45" r="38" fill="none" stroke="url(#scoreGrad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239"/>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2563eb"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="score-pct"><span class="pct-num" id="scorePct">0%</span><span class="pct-lbl">gotowe</span></div>
+        </div>
+        <div class="score-status-txt" id="scoreStatusTxt" style="color:var(--muted)">Uzupełnij pola aby śledzić postęp</div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 12px">
+
+      <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Zakładki</div>
+      <div id="sumTabList"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+
+      <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Szczegóły</div>
+      <div id="sumDetails"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div id="sumAlerts"></div>
+
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+        <button class="btn-primary" style="width:100%;justify-content:center" onclick="showToast('Dokumentacja wygenerowana!','success')"><i class="bi bi-file-earmark-text"></i>Generuj dokumentację</button>
+        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="showToast('Dane skopiowane!','success')"><i class="bi bi-clipboard"></i>Kopiuj jako JSON</button>
+      </div>
+    </div>
+  </aside>
+
+</div><!-- end .shell -->
+
+<!-- ═══ FOOTER BAR ═══ -->
+<div class="footer-bar" id="footerBar">
+  <div class="footer-info">
+    <span class="footer-step" id="footerStep">01</span>
+    <span id="footerStepName">Informacje ogólne</span>
+  </div>
+  <div class="footer-actions">
+    <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
+    <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+  </div>
+</div>
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+<script>
+// ── GLOBAL STATE ──
+const TABS = [
+  {id:'t1',name:'Informacje ogólne',required:['rName','rTitle','rDesc']},
+  {id:'t2',name:'Źródło SQL',required:['sqlType']},
+  {id:'t3',name:'Kolumny',required:[]},
+  {id:'t4',name:'Parametry',required:[]},
+  {id:'t5',name:'Filtry',required:[]},
+  {id:'t6',name:'Grupowanie',required:[]},
+  {id:'t7',name:'Podraporty',required:[]},
+  {id:'t8',name:'Nagłówki/Stopki',required:['rhTitle']},
+  {id:'t9',name:'Brak danych',required:['emptyMsg']},
+  {id:'t10',name:'Opcje wyjścia',required:[]},
+];
+const STEP_NAMES = TABS.map(t=>t.name);
+let sidebarOpen = true;
+let summaryOpen = false;
+let currentTab = 't1';
+
+// ── SIDEBAR TOGGLE ──
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  document.body.classList.toggle('body-sidebar-collapsed', !sidebarOpen);
+}
+
+// ── MOBILE ──
+function openMobileMenu(){
+  document.getElementById('sidebar').classList.add('mobile-open');
+  document.getElementById('mobileOverlay').classList.add('open');
+}
+function closeMobileMenu(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+// ── SUMMARY PANEL ──
+function toggleSummary(){
+  summaryOpen = !summaryOpen;
+  document.body.classList.toggle('body-summary-open', summaryOpen);
+  document.getElementById('summaryToggleBtn').classList.toggle('active', summaryOpen);
+  if(summaryOpen) buildSummaryPanel();
+}
+
+// ── TAB SWITCHING ──
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  currentTab = id;
+  const idx = parseInt(id.replace('t','')) - 1;
+  document.getElementById('footerStep').textContent = String(idx+1).padStart(2,'0');
+  document.getElementById('footerStepName').textContent = STEP_NAMES[idx];
+  document.querySelector('.tab-content').scrollTop = 0;
+  closeMobileMenu();
+  scheduleUpdate();
+}
+function goTab(id){
+  const btn = document.querySelector(`[data-tab="${id}"]`);
+  switchTab(id, btn);
+}
+
+// ── CARD COLLAPSE ──
+function toggleCard(head){
+  const card = head.closest('.card');
+  card.classList.toggle('collapsed');
+}
+
+// ── HF ZONE COLLAPSE ──
+function toggleHF(head){
+  const zone = head.closest('.hf-zone');
+  zone.classList.toggle('hf-collapsed');
+}
+
+// ── SQL FIELDS ──
+function toggleSqlFields(){
+  const v = document.getElementById('sqlType').value;
+  document.getElementById('sqlObjField').style.display = (v && v!=='query') ? '' : 'none';
+  document.getElementById('sqlInlineField').style.display = v==='query' ? '' : 'none';
+}
+
+// ── HEADER MODE ──
+const HM_HINTS = {
+  static:'Statyczny nagłówek to stały tekst w CR Designer — nie zmienia się w runtime.',
+  param:'Nagłówek pobierany z parametru CR ({?X}) — można zmienić z C# przed generowaniem.',
+  formula:'Nagłówek generowany przez CR Formula ({@X}) — może zależeć od parametrów, języka, dat.',
+  mixed:'Każda kolumna ma własny tryb nagłówka — konfigurowane indywidualnie per wiersz.'
+};
+function setHM(m){ document.getElementById('hmHint').innerHTML = `<i class="bi bi-info-circle"></i>${HM_HINTS[m]}`; }
+
+// ── REMOVE ROW ──
+function removeRow(btn){
+  const tr = btn.closest('tr'), tb = tr.closest('tbody');
+  tr.remove(); renumber(tb);
+  scheduleUpdate();
+}
+function renumber(tb){ if(!tb)return; Array.from(tb.rows).forEach((r,i)=>{ const c=r.querySelector('.row-num'); if(c) c.textContent=i+1; }); }
+
+// ── ADD COLUMN ──
+function colRowHtml(n, type=''){
+  return `<tr>
+    <td><span class="drag-handle"><i class="bi bi-grip-vertical"></i></span></td>
+    <td class="row-num">${n}</td>
+    <td><input type="text" class="mono" placeholder="${type==='formula'?'{@FormulaNazwa}':type==='rt'?'#{RunningTotal}':'pole_db'}"/></td>
+    <td><input type="text" placeholder="Nagłówek"/></td>
+    <td><select><option>—</option><option${type==='formula'?' selected':''}>Formula</option><option>String</option><option>Number</option><option>Currency</option><option>Date</option><option>DateTime</option><option>Boolean</option><option>Percent</option></select></td>
+    <td><input type="text" placeholder="format"/></td>
+    <td style="text-align:center"><input type="checkbox" checked/></td>
+    <td style="text-align:center"><input type="checkbox"/></td>
+    <td><select><option>L</option><option>Ś</option><option>P</option></select></td>
+    <td><select><option>Brak</option><option>Kolor</option><option>Tło</option><option>Bold</option><option>Wiele</option></select></td>
+    <td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td>
+  </tr>`;
+}
+function addColRow(){ const tb=document.getElementById('colBody'); tb.insertAdjacentHTML('beforeend', colRowHtml(tb.rows.length+1)); scheduleUpdate(); }
+function addFormulaCol(){ const tb=document.getElementById('colBody'); tb.insertAdjacentHTML('beforeend', colRowHtml(tb.rows.length+1,'formula')); scheduleUpdate(); }
+function addRunningTotal(){ const tb=document.getElementById('colBody'); tb.insertAdjacentHTML('beforeend', colRowHtml(tb.rows.length+1,'rt')); scheduleUpdate(); }
+
+// ── ADD CF ROW ──
+function addCFRow(){
+  const tb=document.getElementById('cfBody'); const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="kolumna"/></td><td><input type="text" class="mono" placeholder="{pole} < 0"/></td><td><select><option>Kolor tekstu</option><option>Kolor tła</option><option>Oba</option><option>Bold</option></select></td><td><input type="color" value="#dc2626"/></td><td><input type="color" value="#fee2e2"/></td><td><select><option>Normal</option><option>Bold</option><option>Italic</option></select></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+}
+
+// ── ADD PARAM ROW ──
+function addParamRow(){
+  const tb=document.getElementById('paramBody'); const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="NazwaParam"/></td><td><select><option>—</option><option>String</option><option>Number</option><option>Date</option><option>DateTime</option><option>Boolean</option></select></td><td><input type="text" placeholder="domyślna"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><select><option>DatePicker</option><option>TextBox</option><option>Dropdown</option><option>MultiSelect</option><option>Ukryta</option></select></td><td><input type="text" class="mono" placeholder="SELECT..."/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); scheduleUpdate();
+}
+
+// ── FILTER GROUP ──
+let fgc = 0;
+function addFilterGroup(){
+  fgc++; const div=document.createElement('div'); div.className='cond-group';
+  div.innerHTML=`<div class="cond-group-bar"><span style="font-size:11px;font-weight:800;color:var(--muted);font-family:'JetBrains Mono',monospace">GRUPA ${fgc}</span><span style="font-size:12px;color:var(--muted)">Wewnątrz:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><span style="margin-left:auto;font-size:12px;color:var(--muted)">Z następną:</span><select class="logic-sel"><option>AND</option><option>OR</option></select><button class="btn-danger-sm ms-2" onclick="this.closest('.cond-group').remove()"><i class="bi bi-x"></i></button></div><div style="padding:8px"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Poziom</th><th>Operator</th><th>Wartość</th><th>Typ wartości</th><th>NOT</th><th>Opis</th><th></th></tr></thead><tbody class="filter-rows"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" style="font-size:12px;padding:5px 12px" onclick="addFilterRow(this)"><i class="bi bi-plus-lg"></i>Dodaj warunek</button></div>`;
+  document.getElementById('filterGroups').appendChild(div);
+}
+function addFilterRow(btn){
+  const tb=btn.closest('.cond-group').querySelector('.filter-rows'); const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>SQL WHERE</option><option>CR Record</option><option>CR Group</option></select></td><td><select><option>= (równa się)</option><option>!=</option><option>&gt;</option><option>&lt;</option><option>BETWEEN</option><option>IN</option><option>LIKE</option><option>IS NULL</option><option>IS NOT NULL</option></select></td><td><input type="text" placeholder="wartość"/></td><td><select><option>Stała</option><option>Param CR</option><option>Formuła CR</option><option>Inne pole</option></select></td><td style="text-align:center"><input type="checkbox" style="accent-color:var(--r)"/></td><td><input type="text" placeholder="Opis"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+}
+
+// ── ADD GROUP ROW ──
+function addGroupRow(){
+  const tb=document.getElementById('groupBody'); const n=tb.rows.length+1;
+  tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${n}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><select><option>ASC</option><option>DESC</option><option>Custom</option></select></td><td><select><option>Brak</option><option>SUM</option><option>COUNT</option><option>AVG</option><option>MIN</option><option>MAX</option></select></td><td><input type="text" class="mono" placeholder="pole_kwota"/></td><td style="text-align:center"><input type="checkbox"/></td><td style="text-align:center"><input type="checkbox"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><input type="text" placeholder="Stopka"/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`);
+}
+
+// ── SUBREPORTS ──
+let src = 0;
+function addSubreport(){
+  src++; const id=`sr${src}`;
+  const div=document.createElement('div'); div.className='sr-card'; div.id=id;
+  div.innerHTML=`<div class="sr-head"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">SR-${String(src).padStart(2,'0')}</span><span style="font-weight:800;flex:1;font-size:13px" id="${id}-label">Nowy podraport</span><span class="sr-pill sr-inline">Inline</span><button class="btn-rm ms-2" onclick="this.closest('.sr-card').remove()"><i class="bi bi-trash3"></i></button></div><div class="sr-tabs"><button class="sr-tab active" onclick="srTab(this,'${id}-a')">Identyfikacja</button><button class="sr-tab" onclick="srTab(this,'${id}-b')">Źródło danych</button><button class="sr-tab" onclick="srTab(this,'${id}-c')">Powiązanie</button><button class="sr-tab" onclick="srTab(this,'${id}-d')">Kolumny</button><button class="sr-tab" onclick="srTab(this,'${id}-e')">Wydajność</button></div><div class="sr-pane active" id="${id}-a"><div class="form-row cols-3"><div class="field"><label class="field-label">Nazwa .rpt</label><input type="text" class="fc mono" placeholder="SR_Nazwa.rpt" oninput="document.getElementById('${id}-label').textContent=this.value||'Nowy podraport'"/></div><div class="field"><label class="field-label">Typ</label><select class="fs"><option>Inline</option><option>On-demand</option><option>Linked Embedded</option></select></div><div class="field"><label class="field-label">Sekcja CR</label><select class="fs"><option>Report Header</option><option>Report Footer</option><option>Group Header</option><option>Group Footer</option><option>Details</option></select></div></div><div class="field mt-2"><label class="field-label">Opis biznesowy</label><textarea class="fc" rows="2" placeholder="Co prezentuje ten podraport?"></textarea></div></div><div class="sr-pane" id="${id}-b"><div class="form-row cols-3"><div class="field"><label class="field-label">Typ źródła</label><select class="fs"><option>VIEW</option><option>SP</option><option>Zapytanie SQL</option></select></div><div class="field"><label class="field-label">Obiekt SQL</label><input type="text" class="fc mono" placeholder="dbo.v_SR_Dane"/></div><div class="field"><label class="field-label">Parametry SR</label><input type="text" class="fc" placeholder="LinkID:Number"/></div></div><div class="field mt-2"><label class="field-label">Zapytanie SQL</label><textarea class="fc mono" rows="3" placeholder="SELECT ... WHERE id = {?LinkID}"></textarea></div></div><div class="sr-pane" id="${id}-c"><div class="info-alert mb-3"><i class="bi bi-info-circle"></i>Powiązanie = przekazywanie wartości z raportu głównego do parametrów SR przez SubreportLinks.</div><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole raportu głównego</th><th>→</th><th>Parametr SR ({?X})</th><th>Konwersja</th><th></th></tr></thead><tbody id="${id}-links"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="{Orders.ID}"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?LinkID}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrLink('${id}-links')"><i class="bi bi-plus-lg"></i>Dodaj powiązanie</button></div><div class="sr-pane" id="${id}-d"><div class="dt-wrap"><table class="dt"><thead><tr><th>#</th><th>Pole</th><th>Nagłówek</th><th>Typ</th><th>Format</th><th>Widoczna</th><th></th></tr></thead><tbody id="${id}-cols"><tr><td class="row-num">1</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr></tbody></table></div><button class="btn-add mt-2" onclick="addSrCol('${id}-cols')"><i class="bi bi-plus-lg"></i>Dodaj kolumnę</button></div><div class="sr-pane" id="${id}-e"><div class="form-row cols-3"><div class="field"><label class="field-label">Wywołania</label><select class="fs"><option>1 raz</option><option>Per grupę</option><option>Per wiersz</option><option>On-demand</option></select></div><div class="field"><label class="field-label">Szac. wierszy SR</label><select class="fs"><option>Małe (&lt;50)</option><option>Średnie (50-500)</option><option>Duże (500-5000)</option><option>Bardzo duże (&gt;5000)</option></select></div><div class="field"><label class="field-label">Ryzyko wydajnościowe</label><select class="fs"><option>Niskie</option><option>Średnie</option><option>Wysokie</option><option>Krytyczne</option></select></div></div><div class="field mt-2"><label class="field-label">Uwagi optymalizacyjne</label><input type="text" class="fc" placeholder="np. Rozważ JOIN zamiast podraportu..."/></div></div>`;
+  document.getElementById('subreportList').appendChild(div);
+}
+function srTab(btn, panId){
+  const sc=btn.closest('.sr-card');
+  sc.querySelectorAll('.sr-tab').forEach(t=>t.classList.remove('active'));
+  sc.querySelectorAll('.sr-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panId).classList.add('active');
+}
+function addSrLink(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole główne"/></td><td style="text-align:center;color:var(--g);font-size:16px">→</td><td><input type="text" class="mono" placeholder="{?Param}"/></td><td><select><option>Brak</option><option>ToText</option><option>ToNumber</option><option>CDate</option></select></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); }
+function addSrCol(id){ const tb=document.getElementById(id); tb.insertAdjacentHTML('beforeend',`<tr><td class="row-num">${tb.rows.length+1}</td><td><input type="text" class="mono" placeholder="pole"/></td><td><input type="text" placeholder="Nagłówek"/></td><td><select><option>String</option><option>Number</option><option>Currency</option><option>Date</option></select></td><td><input type="text" placeholder="format"/></td><td style="text-align:center"><input type="checkbox" checked/></td><td><button class="btn-rm" onclick="removeRow(this)"><i class="bi bi-trash3"></i></button></td></tr>`); }
+
+// ── FORMAT CARD ──
+function toggleFmt(head){
+  const body=head.nextElementSibling;
+  body.classList.toggle('open');
+  head.querySelector('.fmt-chevron').style.transform=body.classList.contains('open')?'':'rotate(-90deg)';
+}
+function addFmtCard(){
+  const fmt=prompt('Nazwa formatu:'); if(!fmt) return;
+  document.getElementById('fmtContainer').insertAdjacentHTML('beforeend',`<div class="fmt-card mt-2"><div class="fmt-head" onclick="toggleFmt(this)"><div class="fmt-ico" style="background:var(--a-l);color:var(--a)"><i class="bi bi-file-earmark"></i></div><span class="fmt-name">${fmt}</span><div style="margin-left:auto" onclick="event.stopPropagation()"><label class="toggle-sw" style="width:32px;height:18px"><input class="fmt-cb" type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb" style="width:12px;height:12px;top:3px;left:3px"></div></div></label></div><i class="bi bi-chevron-down fmt-chevron ms-2"></i></div><div class="fmt-body open"><div class="form-row cols-2"><div class="field"><label class="field-label">Typ eksportu CR</label><input type="text" class="fc mono" placeholder="ExportFormatType.HTML40"/></div><div class="field"><label class="field-label">Wzorzec nazwy</label><input type="text" class="fc mono" placeholder="Raport.html"/></div></div><div class="field mt-2"><label class="field-label">Wytyczne dewelopera</label><textarea class="fc" rows="2" placeholder="Opisz wymagania..."></textarea></div></div></div>`);
+}
+
+// ── TOKENS ──
+let lastFC = null;
+document.addEventListener('focusin', e=>{ if(e.target.matches('input[type=text],input[type=date],textarea')) lastFC=e.target; });
+function insertToken(t){ if(lastFC){ const s=lastFC.selectionStart,e=lastFC.selectionEnd,v=lastFC.value; lastFC.value=v.slice(0,s)+t+v.slice(e); lastFC.selectionStart=lastFC.selectionEnd=s+t.length; lastFC.focus(); showToast(`Token ${t} wstawiony`,'success'); } else { showToast('Kliknij najpierw w pole tekstowe.','warning'); } }
+
+// ── EMPTY STATE PREVIEW ──
+function updateEmptyPreview(){
+  const msg=document.getElementById('emptyMsg').value||'Brak danych dla wybranych kryteriów.';
+  const hint=document.getElementById('emptyHint').value||'Zmień filtry i spróbuj ponownie.';
+  const ico=document.getElementById('emptyIcon').value||'bi-inbox';
+  document.getElementById('emptyPreview').innerHTML=`<span class="es-icon"><i class="bi ${ico}"></i></span><div class="es-title">${msg}</div><div class="es-sub">${hint}</div>`;
+}
+
+// ── FIELD CHANGE → UPDATE INDICATORS ──
+function onFieldChange(el){
+  if(el && el.value && el.classList.contains('fc')){
+    el.classList.add('filled');
+  }
+  scheduleUpdate();
+}
+
+let updateTimer = null;
+function scheduleUpdate(){ clearTimeout(updateTimer); updateTimer = setTimeout(updateAll, 150); }
+
+// ── COMPUTE TAB COMPLETION ──
+function computeTabStatus(tab){
+  const pane = document.getElementById(tab.id);
+  const required = tab.required;
+  let filled = 0, total = required.length;
+
+  required.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && el.value.trim().length > 0) filled++;
+  });
+
+  // Count non-required inputs that are filled (for partial indicator)
+  const allInputs = pane.querySelectorAll('input[type=text]:not([type=hidden]),textarea,select');
+  let anyFilled = 0;
+  allInputs.forEach(el=>{
+    const v = el.value.trim();
+    if(v && v !== '—' && v !== '— wybierz —' && v !== '' && v !== '— wybierz typ —') anyFilled++;
+  });
+
+  if(total === 0){
+    // No required fields — use anyFilled
+    if(anyFilled === 0) return 'none';
+    return 'partial'; // treat optional tabs as partial until saved
+  }
+  if(filled === 0 && anyFilled === 0) return 'none';
+  if(filled < total) return 'partial';
+  return 'complete';
+}
+
+function updateAll(){
+  let totalComplete = 0;
+  const tabData = [];
+  TABS.forEach(tab=>{
+    const status = computeTabStatus(tab);
+    const dot = document.getElementById(`ts-${tab.id}`);
+    if(dot){
+      dot.className = `tab-status ${status}`;
+    }
+    tabData.push({...tab, status});
+    if(status==='complete') totalComplete++;
+  });
+
+  const pct = Math.round((totalComplete/TABS.length)*100);
+  document.getElementById('globalProgressFill').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = pct+'% gotowe';
+
+  // Score circle
+  const circle = document.getElementById('scoreCircle');
+  const circ = 239;
+  circle.style.strokeDashoffset = circ - (circ * pct/100);
+  document.getElementById('scorePct').textContent = pct+'%';
+  const stxt = document.getElementById('scoreStatusTxt');
+  if(pct===0){ stxt.textContent='Uzupełnij pola aby śledzić postęp'; stxt.style.color='var(--muted)'; }
+  else if(pct<50){ stxt.textContent='Dobry początek — kontynuuj!'; stxt.style.color='var(--y)'; }
+  else if(pct<100){ stxt.textContent='Prawie gotowe — świetna robota!'; stxt.style.color='var(--a)'; }
+  else { stxt.textContent='Definicja kompletna! 🎉'; stxt.style.color='var(--g)'; }
+
+  // Update summary panel if open
+  if(summaryOpen) buildSummaryPanel(tabData, pct);
+}
+
+// ── BUILD SUMMARY PANEL ──
+function buildSummaryPanel(tabData, pct){
+  if(!tabData){
+    tabData = TABS.map(t=>({...t, status: computeTabStatus(t)}));
+    pct = Math.round(tabData.filter(t=>t.status==='complete').length/TABS.length*100);
+  }
+
+  // Tab list
+  const tl = document.getElementById('sumTabList');
+  tl.innerHTML = tabData.map((t,i)=>{
+    const icoClass = t.status==='complete'?'sum-ico-g':t.status==='partial'?'sum-ico-y':'sum-ico-n';
+    const icoI = t.status==='complete'?'bi-check':'bi-dash';
+    const pctTxt = t.status==='complete'?'100%':t.status==='partial'?'~%':'0%';
+    return `<div class="sum-tab-row" onclick="goTab('${t.id}')">
+      <div class="tab-ico sum-tab-ico ${icoClass}"><i class="bi ${icoI}"></i></div>
+      <span class="sum-tab-name">${t.name}</span>
+      <span class="sum-tab-pct">${pctTxt}</span>
+    </div>`;
+  }).join('');
+
+  // Details
+  const rName = (document.getElementById('rName')||{}).value||'';
+  const rTitle = (document.getElementById('rTitle')||{}).value||'';
+  const rDesc = (document.getElementById('rDesc')||{}).value||'';
+  const rStatus = (document.getElementById('rStatus')||{}).value||'Szkic';
+  const sqlType = (document.getElementById('sqlType')||{}).value||'';
+  const cols = document.getElementById('colBody').rows.length;
+  const params = document.getElementById('paramBody').rows.length;
+  const groups = document.getElementById('groupBody').rows.length;
+  const srs = document.querySelectorAll('.sr-card').length;
+  const activeFmts = document.querySelectorAll('.fmt-cb:checked').length;
+
+  const sqlLabels={view:'Widok (VIEW)',proc:'SP',fn:'TVF',query:'SQL inline','':'—'};
+
+  document.getElementById('sumDetails').innerHTML = `
+    <div class="sum-detail"><div class="sum-detail-label">Nazwa raportu</div><div class="sum-detail-val ${!rName?'empty':''}">${rName||'(nie podano)'}</div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Tytuł wyświetlany</div><div class="sum-detail-val ${!rTitle?'empty':''}">${rTitle||'(nie podano)'}</div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Status · Źródło SQL</div><div class="sum-detail-val"><span class="sum-badge blue">${rStatus}</span> <span class="sum-badge ${sqlType?'green':'yellow'}">${sqlLabels[sqlType]}</span></div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Kolumny · Parametry · Grupy · SR</div><div class="sum-detail-val">${cols} · ${params} · ${groups} · ${srs}</div></div>
+    <div class="sum-detail"><div class="sum-detail-label">Aktywne formaty eksportu</div><div class="sum-detail-val">${activeFmts} aktywnych</div></div>
+  `;
+
+  // Alerts
+  const missing = [];
+  if(!rName) missing.push('Brak nazwy raportu');
+  if(!rTitle) missing.push('Brak tytułu wyświetlanego');
+  if(!sqlType) missing.push('Nie wybrano typu źródła SQL');
+  if(cols===0) missing.push('Brak zdefiniowanych kolumn');
+  if(activeFmts===0) missing.push('Brak aktywnego formatu eksportu');
+
+  const alertsEl = document.getElementById('sumAlerts');
+  if(missing.length){
+    alertsEl.innerHTML = missing.map(m=>`<div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i>${m}</div>`).join('');
+  } else {
+    alertsEl.innerHTML = `<div class="sum-alert ok"><i class="bi bi-check-circle"></i>Definicja raportu jest kompletna!</div>`;
+  }
+}
+
+// ── TOAST ──
+function showToast(msg, type=''){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="bi bi-${type==='success'?'check-circle':type==='warning'?'exclamation-triangle':'info-circle'}"></i>${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('removing'); setTimeout(()=>t.remove(),250); }, 2500);
+}
+
+// ── INPUT CHANGE LISTENER ──
+document.addEventListener('input', e=>{
+  if(e.target.matches('input,textarea,select')) scheduleUpdate();
+});
+document.addEventListener('change', e=>{
+  if(e.target.matches('input,textarea,select')) scheduleUpdate();
+});
+
+// ── INIT ──
+// Add initial filter group
+addFilterGroup();
+// Initial update
+setTimeout(updateAll, 300);
+
+// ── ANIMATE CARDS ON TAB SWITCH ──
+const tabObs = new MutationObserver(()=>{
+  document.querySelectorAll('.tab-pane.active .card').forEach((c,i)=>{
+    c.style.animationDelay = (i*0.05)+'s';
+    c.style.animation='none'; c.offsetHeight;
+    c.style.animation='';
+  });
+});
+document.querySelectorAll('.tab-pane').forEach(p=>tabObs.observe(p,{attributes:true,attributeFilter:['class']}));
+
+// ── INPUT FILL TRACKING ──
+document.querySelectorAll('input[type=text],textarea').forEach(el=>{
+  el.addEventListener('input', ()=>{ el.classList.toggle('filled', el.value.trim().length>0); });
+});
+</script>
+</body>
+</html>
