@@ -42,6 +42,31 @@
   --bounce:.35s cubic-bezier(.34,1.56,.64,1);
 }
 
+body.theme-dark{
+  --bg:#0b1220;
+  --bg2:#10192b;
+  --surface:#111827;
+  --surface2:#1f2937;
+  --surface3:#0f172a;
+  --border:#334155;
+  --border2:#475569;
+  --a:#60a5fa;
+  --a-l:#1e3a8a;
+  --a-d:#3b82f6;
+  --g:#34d399;
+  --g-l:#064e3b;
+  --y:#f59e0b;
+  --y-l:#78350f;
+  --r:#f87171;
+  --r-l:#7f1d1d;
+  --txt:#e2e8f0;
+  --txt2:#cbd5e1;
+  --muted:#94a3b8;
+  --shadow:0 1px 3px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.25);
+  --shadow-md:0 8px 24px rgba(0,0,0,.38);
+  --shadow-lg:0 20px 60px rgba(0,0,0,.5);
+}
+
 /* ══════════ RESET & BASE ══════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -130,6 +155,28 @@ body{
 .progress-label{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-family:'JetBrains Mono',monospace;}
 
 .topbar-right{display:flex;align-items:center;gap:8px;padding-right:16px;}
+.theme-switch{
+  display:flex;align-items:center;
+  border:1.5px solid var(--border);
+  border-radius:999px;
+  padding:2px;
+  background:var(--surface2);
+}
+.theme-switch-btn{
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:700;
+  display:flex;align-items:center;gap:6px;
+  cursor:pointer;
+}
+.theme-switch-btn.active{
+  background:linear-gradient(135deg,var(--a),var(--a-d));
+  color:#fff;
+}
 .tb-btn{
   display:flex;align-items:center;gap:6px;
   padding:7px 14px;border-radius:var(--radius-sm);
@@ -325,7 +372,6 @@ body{
   z-index:260;
   display:flex;flex-direction:column;
   box-shadow:-4px 0 24px rgba(15,23,42,.08);
-  animation:slideInRight .4s .2s ease both;
 }
 .body-summary-open .summary-panel{transform:translateX(0);}
 .summary-backdrop{
@@ -527,7 +573,31 @@ body{
   border:5px solid transparent;border-bottom-color:var(--txt);
 }
 .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{
-  opacity:1;transform:translateX(-50%) translateY(0);
+  opacity:0;transform:translateX(-50%) translateY(5px);
+}
+
+.global-tip{
+  position:fixed;
+  z-index:1200;
+  background:var(--txt);
+  color:var(--surface);
+  border-radius:9px;
+  padding:9px 13px;
+  font-size:11.5px;
+  line-height:1.55;
+  max-width:min(340px,calc(100vw - 20px));
+  box-shadow:0 8px 30px rgba(0,0,0,.35);
+  pointer-events:none;
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .16s,transform .16s;
+}
+.global-tip.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  .tip-popup{left:auto;right:0;transform:translateY(5px);}
+  .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{transform:translateY(0);}
+  .tip-popup::after{left:auto;right:8px;transform:none;}
 }
 
 @media(max-width:900px){
@@ -814,6 +884,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr;}
   .page-header h1{font-size:20px;}
   .tb-btn span{display:none;}
+  .theme-switch-btn span{display:none;}
   .topbar-right .tb-btn:not(.primary){display:none;}
   .dt{min-width:400px;}
 }
@@ -828,6 +899,9 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 input[type=checkbox]{accent-color:var(--a);width:15px;height:15px;cursor:pointer;}
 input[type=color]{border-radius:6px;border:1.5px solid var(--border);cursor:pointer;height:34px;}
 select.fs option{background:#fff;}
+body.theme-dark .topbar,
+body.theme-dark .footer-bar{background:rgba(17,24,39,.9);}
+body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
 </style>
 </head>
 <body>
@@ -849,6 +923,10 @@ select.fs option{background:#fff;}
     <span class="progress-label" id="progressLabel">0% gotowe</span>
   </div>
   <div class="topbar-right">
+    <div class="theme-switch" role="group" aria-label="Tryb kolorystyczny">
+      <button class="theme-switch-btn active" id="themeLightBtn" type="button" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i><span>Jasny</span></button>
+      <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>Ciemny</span></button>
+    </div>
     <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="tb-btn primary" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
@@ -1723,6 +1801,14 @@ select.fs option{background:#fff;}
       <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Zakładki</div>
       <div id="sumTabList"></div>
 
+      <div class="sum-detail" style="margin-top:8px">
+        <div class="sum-detail-label">Szybkie akcje</div>
+        <div class="sum-detail-val" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="tchip" type="button" onclick="goTab('t1');toggleSummary(false)"><i class="bi bi-pencil-square"></i> Edytuj metadane</button>
+          <button class="tchip g" type="button" onclick="goTab('t10');toggleSummary(false)"><i class="bi bi-filetype-pdf"></i> Eksport</button>
+        </div>
+      </div>
+
       <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
 
       <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Szczegóły</div>
@@ -1753,6 +1839,8 @@ select.fs option{background:#fff;}
   </div>
 </div>
 
+<div id="globalTip" class="global-tip" aria-hidden="true"></div>
+
 <!-- ═══ TOAST CONTAINER ═══ -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1775,6 +1863,20 @@ const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
 let summaryOpen = false;
 let currentTab = 't1';
+let activeTipBtn = null;
+
+function setTheme(mode){
+  const dark = mode === 'dark';
+  document.body.classList.toggle('theme-dark', dark);
+  document.getElementById('themeLightBtn').classList.toggle('active', !dark);
+  document.getElementById('themeDarkBtn').classList.toggle('active', dark);
+  localStorage.setItem('rf-theme', dark ? 'dark' : 'light');
+}
+
+function initTheme(){
+  const saved = localStorage.getItem('rf-theme');
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+}
 
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(){
@@ -2297,6 +2399,8 @@ document.addEventListener('keydown', e=>{
 // ── INIT ──
 // Add initial filter group
 addFilterGroup();
+initTheme();
+initGlobalTooltips();
 // Initial update
 setTimeout(updateAll, 300);
 
