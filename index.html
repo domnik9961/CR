@@ -29,6 +29,11 @@
   --txt:#0f172a;
   --txt2:#334155;
   --muted:#64748b;
+  --color-success-bg:var(--g-l);
+  --color-warning-bg:var(--y-l);
+  --color-info-bg:var(--a-l);
+  --surface-elevated:linear-gradient(135deg,var(--a),var(--a-d));
+  --surface-overlay:var(--txt);
   --sidebar-w:260px;
   --sidebar-collapsed:64px;
   --summary-w:320px;
@@ -62,6 +67,11 @@ body.theme-dark{
   --txt:#e2e8f0;
   --txt2:#cbd5e1;
   --muted:#94a3b8;
+  --color-success-bg:#064e3b;
+  --color-warning-bg:#78350f;
+  --color-info-bg:#1e3a8a;
+  --surface-elevated:linear-gradient(135deg,#60a5fa,#3b82f6);
+  --surface-overlay:#020617;
   --shadow:0 1px 3px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.25);
   --shadow-md:0 8px 24px rgba(0,0,0,.38);
   --shadow-lg:0 20px 60px rgba(0,0,0,.5);
@@ -174,7 +184,7 @@ body{
   cursor:pointer;
 }
 .theme-switch-btn.active{
-  background:linear-gradient(135deg,var(--a),var(--a-d));
+  background:var(--surface-elevated);
   color:#fff;
 }
 .tb-btn{
@@ -449,8 +459,8 @@ body{
 
 /* Alert items */
 .sum-alert{display:flex;gap:7px;padding:8px 10px;border-radius:7px;font-size:11.5px;line-height:1.5;margin-bottom:5px;}
-.sum-alert.warn{background:var(--y-l);color:#78350f;}
-.sum-alert.ok{background:var(--g-l);color:#064e3b;}
+.sum-alert.warn{background:var(--color-warning-bg);color:var(--y);}
+.sum-alert.ok{background:var(--color-success-bg);color:var(--g);}
 .sum-alert i{flex-shrink:0;font-size:13px;margin-top:1px;}
 
 .sum-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;margin:2px 2px 0 0;}
@@ -548,12 +558,12 @@ body{
 .req-star{color:var(--r);font-size:12px;}
 .tip-btn{
   width:15px;height:15px;border-radius:50%;
-  background:var(--surface3);border:1px solid var(--border2);
+  background:var(--surface-elevated);border:1px solid var(--border2);
   color:var(--muted);cursor:help;display:grid;place-items:center;
   font-size:9px;transition:all var(--trans);flex-shrink:0;
   font-style:normal;
 }
-.tip-btn:hover{background:var(--a-l);border-color:var(--a);color:var(--a);}
+.tip-btn:hover{background:var(--color-info-bg);border-color:var(--a);color:var(--a);}
 /* tooltip popup */
 .tip-btn{position:relative;}
 .tip-popup{
@@ -837,15 +847,15 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 /* ══════════ TOAST ══════════ */
 .toast-container{position:fixed;bottom:80px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
 .toast{
-  background:var(--txt);color:#fff;border-radius:10px;
+  background:var(--surface-overlay);color:#fff;border-radius:10px;
   padding:11px 16px;font-size:13px;font-weight:600;
   display:flex;align-items:center;gap:9px;
   box-shadow:var(--shadow-lg);min-width:220px;
   animation:toastIn .3s var(--bounce) both;
   font-family:'Epilogue',sans-serif;
 }
-.toast.success{background:var(--g);}
-.toast.warning{background:var(--y);}
+.toast.success{background:var(--color-success-bg);color:var(--g);}
+.toast.warning{background:var(--color-warning-bg);color:var(--y);}
 .toast.removing{animation:toastOut .25s ease forwards;}
 
 /* ══════════ MOBILE OVERLAY ══════════ */
@@ -901,7 +911,7 @@ input[type=color]{border-radius:6px;border:1.5px solid var(--border);cursor:poin
 select.fs option{background:#fff;}
 body.theme-dark .topbar,
 body.theme-dark .footer-bar{background:rgba(17,24,39,.9);}
-body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
+body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
 </style>
 </head>
 <body>
@@ -926,6 +936,7 @@ body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
     <div class="theme-switch" role="group" aria-label="Tryb kolorystyczny">
       <button class="theme-switch-btn active" id="themeLightBtn" type="button" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i><span>Jasny</span></button>
       <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>Ciemny</span></button>
+      <button class="theme-switch-btn" id="themeAutoBtn" type="button" onclick="setTheme('auto')"><i class="bi bi-circle-half"></i><span>Auto</span></button>
     </div>
     <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
@@ -1864,18 +1875,34 @@ let sidebarOpen = true;
 let summaryOpen = false;
 let currentTab = 't1';
 let activeTipBtn = null;
+const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+function applyAutoTheme(event){
+  const prefersDark = typeof event?.matches === 'boolean' ? event.matches : themeMediaQuery.matches;
+  document.body.classList.toggle('theme-dark', prefersDark);
+}
 
 function setTheme(mode){
-  const dark = mode === 'dark';
-  document.body.classList.toggle('theme-dark', dark);
-  document.getElementById('themeLightBtn').classList.toggle('active', !dark);
-  document.getElementById('themeDarkBtn').classList.toggle('active', dark);
-  localStorage.setItem('rf-theme', dark ? 'dark' : 'light');
+  const themeMode = mode === 'dark' || mode === 'auto' ? mode : 'light';
+  themeMediaQuery.removeEventListener('change', applyAutoTheme);
+
+  if(themeMode === 'auto'){
+    applyAutoTheme();
+    themeMediaQuery.addEventListener('change', applyAutoTheme);
+  } else {
+    document.body.classList.toggle('theme-dark', themeMode === 'dark');
+  }
+
+  document.getElementById('themeLightBtn').classList.toggle('active', themeMode === 'light');
+  document.getElementById('themeDarkBtn').classList.toggle('active', themeMode === 'dark');
+  document.getElementById('themeAutoBtn').classList.toggle('active', themeMode === 'auto');
+  localStorage.setItem('rf-theme', themeMode);
 }
 
 function initTheme(){
   const saved = localStorage.getItem('rf-theme');
-  setTheme(saved === 'dark' ? 'dark' : 'light');
+  const initial = saved === 'dark' || saved === 'auto' ? saved : 'light';
+  setTheme(initial);
 }
 
 // ── SIDEBAR TOGGLE ──
