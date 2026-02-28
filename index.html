@@ -2013,6 +2013,7 @@ let summaryOpen = false;
 let summaryCompact = false;
 let currentTab = 't1';
 let activeTipBtn = null;
+let summaryCloseTimer = null;
 const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 function applyAutoTheme(event){
