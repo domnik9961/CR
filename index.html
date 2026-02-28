@@ -1070,6 +1070,113 @@ select.fs option{background:#fff;}
           </div>
         </div>
 
+        <div class="card card-nth-3">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-person-badge"></i></div>
+            <span class="card-title">Runtime: logowanie DB</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Serwer SQL <span class="req-star">*</span></label><input type="text" class="fc mono" placeholder="np. sql-prod-01\INSTANCE" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Baza danych <span class="req-star">*</span></label><input type="text" class="fc" placeholder="np. ReportingDb" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Tryb autoryzacji <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>Windows Integrated</option><option>SQL Login</option><option>Azure AD / Managed Identity</option></select></div>
+              <div class="field"><label class="field-label">Środowisko runtime <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>DEV</option><option>TEST</option><option>UAT</option><option>PROD</option></select></div>
+            </div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: uzupełnij <code style="font-family:'JetBrains Mono',monospace">ConnectionInfo</code>, następnie przypisz do tabel przez <code style="font-family:'JetBrains Mono',monospace">ApplyLogOnInfo()</code>.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-4">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-diagram-3"></i></div>
+            <span class="card-title">Mapowanie tabel po SetDataSource / ApplyLogOnInfo</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Mapowanie tabel raportu głównego <span class="req-star">*</span></label><textarea class="fc mono" rows="3" placeholder="np. dbo.v_RaportSprzedazy -> ds.Tables[\"Main\"]" oninput="onFieldChange(this)"></textarea></div>
+              <div class="field"><label class="field-label">Mapowanie tabel podraportów <span class="req-star">*</span></label><textarea class="fc mono" rows="3" placeholder="np. SR_Pozycje: dbo.v_Pozycje -> ds.Tables[\"Items\"]" oninput="onFieldChange(this)"></textarea></div>
+            </div>
+            <div class="field"><label class="field-label">Strategia iteracji tabel <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>Najpierw report.Database.Tables, potem subreporty</option><option>Wyłącznie SetDataSource(DataSet)</option><option>Hybrydowo: ApplyLogOnInfo + SetDataSource</option></select></div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: iteruj po <code style="font-family:'JetBrains Mono',monospace">report.Database.Tables</code> i <code style="font-family:'JetBrains Mono',monospace">report.Subreports</code>, dla każdej tabeli zastosuj ten sam login i mapowanie datasetu.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-5">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-yellow"><i class="bi bi-stopwatch"></i></div>
+            <span class="card-title">Timeouty i limity</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Maks. liczba rekordów <span class="req-star">*</span></label><input type="number" class="fc" min="0" placeholder="np. 200000" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Timeout zapytania SQL (s) <span class="req-star">*</span></label><input type="number" class="fc" min="1" placeholder="np. 120" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Timeout renderowania CR (s) <span class="req-star">*</span></label><input type="number" class="fc" min="1" placeholder="np. 180" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="field"><label class="field-label">Zachowanie po przekroczeniu limitu <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>Przerwij i zwróć błąd użytkownikowi</option><option>Przytnij wynik i pokaż ostrzeżenie</option><option>Przełącz na tryb asynchroniczny (kolejka)</option></select></div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: ustaw timeout na <code style="font-family:'JetBrains Mono',monospace">SqlCommand.CommandTimeout</code> i egzekwuj limity przed <code style="font-family:'JetBrains Mono',monospace">ExportToStream()</code>.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-6">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-red"><i class="bi bi-shield-lock"></i></div>
+            <span class="card-title">Polityka bezpieczeństwa danych</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-2">
+              <div class="field"><label class="field-label">Pola wrażliwe do maskowania <span class="req-star">*</span></label><textarea class="fc" rows="3" placeholder="np. PESEL, NIP, nr_konta, email" oninput="onFieldChange(this)"></textarea></div>
+              <div class="field"><label class="field-label">Reguła maskowania <span class="req-star">*</span></label><textarea class="fc mono" rows="3" placeholder="np. PESEL -> ***********, email -> a***@firma.pl" oninput="onFieldChange(this)"></textarea></div>
+            </div>
+            <div class="field"><label class="field-label">Role uprawnień do raportu <span class="req-star">*</span></label><input type="text" class="fc" placeholder="np. CR_VIEWER, CR_MANAGER, CR_AUDITOR" oninput="onFieldChange(this)"/></div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: maskuj dane przed <code style="font-family:'JetBrains Mono',monospace">SetDataSource()</code> i waliduj role użytkownika przed wygenerowaniem raportu.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-7">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-green"><i class="bi bi-globe2"></i></div>
+            <span class="card-title">Lokalizacja i formatowanie</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Locale / kultura <span class="req-star">*</span></label><input type="text" class="fc mono" placeholder="np. pl-PL" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Strefa czasowa <span class="req-star">*</span></label><input type="text" class="fc" placeholder="np. Europe/Warsaw" oninput="onFieldChange(this)"/></div>
+              <div class="field"><label class="field-label">Format daty i liczby <span class="req-star">*</span></label><input type="text" class="fc mono" placeholder="np. dd.MM.yyyy | #,##0.00" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: ustaw <code style="font-family:'JetBrains Mono',monospace">CultureInfo</code> i konwertuj daty do właściwej strefy przed podaniem danych do raportu.</div>
+          </div>
+        </div>
+
+        <div class="card card-nth-8">
+          <div class="card-head collapsible" onclick="toggleCard(this)">
+            <div class="card-ico ci-blue"><i class="bi bi-send-check"></i></div>
+            <span class="card-title">Dystrybucja i harmonogram</span>
+            <span class="card-badge badge-req">WYMAGANE</span>
+            <i class="bi bi-chevron-down collapse-chevron ms-auto"></i>
+          </div>
+          <div class="card-body">
+            <div class="form-row cols-3">
+              <div class="field"><label class="field-label">Tryb uruchamiania <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>On-demand (na żądanie)</option><option>Scheduled (harmonogram)</option><option>Oba tryby</option></select></div>
+              <div class="field"><label class="field-label">Kanał dystrybucji <span class="req-star">*</span></label><select class="fs" onchange="onFieldChange(this)"><option value="">— wybierz —</option><option>PDF</option><option>XLSX</option><option>E-mail (załącznik)</option><option>PDF + XLSX + e-mail</option></select></div>
+              <div class="field"><label class="field-label">Harmonogram CRON / interwał <span class="req-star">*</span></label><input type="text" class="fc mono" placeholder="np. 0 0 6 * * 1-5" oninput="onFieldChange(this)"/></div>
+            </div>
+            <div class="field"><label class="field-label">Lista odbiorców / grupa docelowa <span class="req-star">*</span></label><textarea class="fc" rows="2" placeholder="np. finanse@firma.pl; controlling@firma.pl" oninput="onFieldChange(this)"></textarea></div>
+            <div class="field-hint"><i class="bi bi-info-circle"></i>Jak użyć w C# runtime: dla on-demand wywołuj eksport synchronicznie, a dla scheduled zapisuj zlecenie do joba i wysyłaj wynik jako PDF/XLSX/mail.</div>
+          </div>
+        </div>
+
         <div class="nav-actions">
           <button class="btn-secondary" onclick="goTab('t1')"><i class="bi bi-arrow-left"></i> Wróć</button>
           <button class="btn-primary" onclick="goTab('t3')">Dalej: Kolumny <i class="bi bi-arrow-right"></i></button>
