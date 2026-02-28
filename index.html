@@ -364,6 +364,34 @@ body{
   margin:0 auto;
 }
 
+.quick-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:0 auto 14px;
+  max-width:1100px;
+  padding:0 32px;
+}
+.quick-action-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:none;
+  border-radius:999px;
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform var(--trans),filter var(--trans),box-shadow var(--trans);
+  box-shadow:var(--shadow);
+}
+.quick-action-chip i{font-size:13px;}
+.quick-action-chip:hover{transform:translateY(-1px);filter:brightness(.98);}
+.quick-action-chip:focus-visible{outline:2px solid var(--a);outline-offset:2px;}
+.quick-action-chip.lightning{background:var(--a-l);color:var(--a);}
+.quick-action-chip.warning{background:var(--y-l);color:var(--y);}
+.quick-action-chip.success{background:var(--g-l);color:var(--g);}
+
 /* Tab pane animation */
 .tab-pane{display:none;}
 .tab-pane.active{
@@ -378,12 +406,25 @@ body{
   background:var(--surface);
   border-left:1px solid var(--border);
   transform:translateX(100%);
-  transition:transform var(--trans);
+  opacity:0;
+  pointer-events:none;
+  will-change:transform,opacity;
   z-index:260;
   display:flex;flex-direction:column;
   box-shadow:-4px 0 24px rgba(15,23,42,.08);
 }
-.body-summary-open .summary-panel{transform:translateX(0);}
+.body-summary-open .summary-panel{
+  transform:translateX(0);
+  opacity:1;
+  pointer-events:auto;
+  animation:summaryPanelIn .24s cubic-bezier(.2,.7,.2,1) both;
+}
+.body-summary-closing .summary-panel{
+  transform:translateX(100%);
+  opacity:0;
+  pointer-events:none;
+  animation:summaryPanelOut .2s cubic-bezier(.4,0,.2,1) both;
+}
 .summary-backdrop{
   position:fixed;
   inset:var(--topbar-h) 0 0;
@@ -397,11 +438,16 @@ body{
   opacity:1;
   pointer-events:auto;
 }
+.body-summary-closing .summary-backdrop{
+  opacity:0;
+  pointer-events:none;
+}
 .sum-panel-head{
   padding:16px 18px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
   background:var(--surface2);
   flex-shrink:0;
+  position:relative;
 }
 .sum-panel-head-actions{display:flex;align-items:center;gap:10px;}
 .sum-panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--txt);}
@@ -913,9 +959,39 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   .tab-content{padding:20px 16px 100px;}
   .form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr 1fr;}
   .form-row.cols-2{grid-template-columns:1fr;}
-  .body-summary-open .summary-panel{
-    width:100vw;z-index:300;
+  .summary-panel{
+    top:auto;
+    inset:0;
+    width:100vw;
+    max-width:none;
+    border-left:none;
+    border-top:1px solid var(--border);
+    border-radius:16px 16px 0 0;
+    box-shadow:0 -12px 40px rgba(15,23,42,.26);
+    transform:translateY(100%);
   }
+  .body-summary-open .summary-panel,
+  .body-summary-closing .summary-panel{z-index:300;}
+  .body-summary-open .summary-panel{transform:translateY(0);}
+  .body-summary-closing .summary-panel{transform:translateY(100%);}
+  .sum-panel-head{
+    padding:16px;
+    gap:8px;
+  }
+  .sum-panel-head::before{
+    content:'';
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:42px;
+    height:4px;
+    border-radius:999px;
+    background:var(--border2);
+  }
+  .sum-panel-title{font-size:15px;}
+  .quick-actions{padding:0 16px;}
+  .tab-content{padding-top:12px;}
 }
 @media(max-width:600px){
   .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr;}
@@ -1050,6 +1126,11 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
   <!-- ═══ MAIN ═══ -->
   <main class="main">
     <form id="reportDefinitionForm">
+      <div class="quick-actions" aria-label="Szybkie akcje formularza">
+        <button class="quick-action-chip lightning" type="button" onclick="clearCurrentSection()"><i class="bi bi-lightning-charge"></i>Wyczyść sekcję</button>
+        <button class="quick-action-chip warning" type="button" onclick="jumpToErrors()"><i class="bi bi-exclamation-circle"></i>Przejdź do błędów</button>
+        <button class="quick-action-chip success" type="button" onclick="copySummaryToClipboard()"><i class="bi bi-clipboard-check"></i>Skopiuj podsumowanie</button>
+      </div>
       <div class="tab-content">
 
       <!-- ══ TAB 1 ══ -->
@@ -2093,10 +2174,29 @@ function toggleSummarySection(sectionId){
 function toggleSummary(forceState){
   const nextState = typeof forceState === 'boolean' ? forceState : !summaryOpen;
   if(nextState === summaryOpen) return;
-  summaryOpen = nextState;
-  document.body.classList.toggle('body-summary-open', summaryOpen);
-  document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.toggle('active', summaryOpen));
-  if(summaryOpen) buildSummaryPanel();
+
+  if(summaryCloseTimer){
+    clearTimeout(summaryCloseTimer);
+    summaryCloseTimer = null;
+  }
+
+  if(nextState){
+    summaryOpen = true;
+    document.body.classList.remove('body-summary-closing');
+    document.body.classList.add('body-summary-open');
+    document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.add('active'));
+    buildSummaryPanel();
+    return;
+  }
+
+  summaryOpen = false;
+  document.body.classList.remove('body-summary-open');
+  document.body.classList.add('body-summary-closing');
+  document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.remove('active'));
+  summaryCloseTimer = setTimeout(()=>{
+    document.body.classList.remove('body-summary-closing');
+    summaryCloseTimer = null;
+  }, 220);
 }
 
 // ── TAB SWITCHING ──
@@ -2551,6 +2651,72 @@ function renderValidationSummary(errors){
 
   const list = errors.map(e=>`<li>${e.message}</li>`).join('');
   alertsEl.innerHTML = `<div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i><div><div><strong>Popraw poniższe błędy:</strong></div><ul class="sum-alert-list">${list}</ul></div></div>`;
+}
+
+function clearCurrentSection(){
+  const tab = document.getElementById(currentTab);
+  if(!tab) return;
+  tab.querySelectorAll('input,textarea,select').forEach(el=>{
+    if(el.type === 'button' || el.type === 'submit' || el.type === 'reset' || el.disabled) return;
+    if(el.type === 'checkbox' || el.type === 'radio'){
+      el.checked = false;
+    }else if(el.tagName === 'SELECT'){
+      el.selectedIndex = 0;
+    }else{
+      el.value = '';
+    }
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  clearValidationErrors();
+  showToast('Wyczyszczono bieżącą sekcję.','success');
+}
+
+function jumpToErrors(){
+  const errors = getValidationErrors();
+  renderValidationSummary(errors);
+  if(!errors.length){
+    showToast('Brak błędów walidacji.','success');
+    return;
+  }
+  if(!summaryOpen) toggleSummary(true);
+  const first = errors[0];
+  goTab(first.tab);
+  const firstField = document.getElementById(first.fieldId);
+  if(firstField) firstField.focus({preventScroll:false});
+  showToast(`Znaleziono błędy: ${errors.length}.`, 'warning');
+}
+
+function buildClipboardSummary(){
+  const progress = document.getElementById('progressLabel')?.textContent?.trim() || '0% gotowe';
+  const reportName = document.getElementById('rName')?.value?.trim() || '—';
+  const reportTitle = document.getElementById('rTitle')?.value?.trim() || '—';
+  const sourceType = document.getElementById('sqlType')?.value || '—';
+  const defaultFormat = document.getElementById('defaultExportFormat')?.value || '—';
+  const errors = getValidationErrors();
+  return [
+    'Podsumowanie definicji raportu',
+    `Postęp: ${progress}`,
+    `Nazwa raportu: ${reportName}`,
+    `Tytuł: ${reportTitle}`,
+    `Typ źródła SQL: ${sourceType}`,
+    `Domyślny format eksportu: ${defaultFormat}`,
+    `Liczba błędów walidacji: ${errors.length}`
+  ].join('\n');
+}
+
+async function copySummaryToClipboard(){
+  const payload = buildClipboardSummary();
+  if(!navigator.clipboard || !navigator.clipboard.writeText){
+    showToast('Schowek niedostępny w tej przeglądarce.','warning');
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(payload);
+    showToast('Skopiowano podsumowanie do schowka.','success');
+  }catch(_err){
+    showToast('Nie udało się skopiować podsumowania.','warning');
+  }
 }
 
 function validateBeforeSubmit(){
