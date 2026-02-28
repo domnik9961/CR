@@ -525,6 +525,15 @@ body{
 .sum-alert.warn{background:var(--color-warning-bg);color:var(--y);}
 .sum-alert.ok{background:var(--color-success-bg);color:var(--g);}
 .sum-alert i{flex-shrink:0;font-size:13px;margin-top:1px;}
+.sum-priority-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
+.sum-priority{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;}
+.sum-priority-title{font-size:11px;font-weight:800;color:var(--txt);line-height:1.35;}
+.sum-priority-body{font-size:11.5px;color:var(--txt2);line-height:1.45;}
+.sum-priority-cta{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:5px 8px;border-radius:999px;border:1px solid var(--a);background:var(--a-l);color:var(--a);font-size:11px;font-weight:700;cursor:pointer;}
+.sum-priority-cta:hover{background:#dbeafe;}
+.sum-priority-rules{margin-top:7px;padding:7px 10px;border-radius:8px;background:var(--surface2);border:1px dashed var(--border2);}
+.sum-priority-rules ul{margin:5px 0 0 16px;padding:0;}
+.sum-priority-rules li{font-size:10.8px;color:var(--muted);line-height:1.45;}
 
 .sum-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;margin:2px 2px 0 0;}
 .sum-badge.blue{background:var(--a-l);color:var(--a);}
@@ -1973,6 +1982,7 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
     <button class="tb-btn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button class="tb-btn" id="quickFixCta" style="display:none" onclick="topPriorityError && goToField(topPriorityError.tab, topPriorityError.fieldId)"><i class="bi bi-magic"></i><span>Przejdź i popraw</span></button>
     <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
 </div>
@@ -2216,6 +2226,19 @@ function switchTab(id, btn){
 function goTab(id){
   const btn = document.querySelector(`[data-tab="${id}"]`);
   switchTab(id, btn);
+}
+
+function goToField(tabId, fieldId){
+  if(!tabId) return;
+  goTab(tabId);
+  if(summaryOpen) toggleSummary(false);
+  requestAnimationFrame(()=>{
+    const field = fieldId ? document.getElementById(fieldId) : null;
+    if(field){
+      field.focus({preventScroll:false});
+      if(typeof field.scrollIntoView === 'function') field.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  });
 }
 
 // ── CARD COLLAPSE ──
@@ -2495,6 +2518,9 @@ function updateAll(){
   else if(pct<100){ stxt.textContent='Prawie gotowe — świetna robota!'; stxt.style.color='var(--a)'; }
   else { stxt.textContent='Definicja kompletna! 🎉'; stxt.style.color='var(--g)'; }
 
+  const validationErrors = getValidationErrors();
+  updateQuickFixCta(getPrioritySuggestions(validationErrors)[0] || null);
+
   // Update summary panel if open
   if(summaryOpen) buildSummaryPanel(tabData, pct);
 }
@@ -2641,16 +2667,71 @@ function getValidationErrors(){
   return errors;
 }
 
+function getErrorPriority(error){
+  if(!error) return 99;
+  if(error.tab === 't1' || error.tab === 't2') return 0;
+  if(error.tab === 't10') return 2;
+  return 1;
+}
+
+function getPrioritySuggestions(errors){
+  return [...errors]
+    .sort((a,b)=>getErrorPriority(a)-getErrorPriority(b))
+    .slice(0,2)
+    .map((error, idx)=>({
+      ...error,
+      title: idx===0 ? 'Najwyższy priorytet' : 'Kolejny krok',
+      body: error.message
+    }));
+}
+
+function updateQuickFixCta(error){
+  topPriorityError = error || null;
+  const btn = document.getElementById('quickFixCta');
+  if(!btn) return;
+  if(!error){
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
+  btn.innerHTML = '<i class="bi bi-magic"></i><span>Przejdź i popraw</span>';
+}
+
+function onPriorityCta(tab, fieldId){
+  goToField(tab, fieldId);
+}
+
 function renderValidationSummary(errors){
   const alertsEl = document.getElementById('sumAlerts');
   if(!alertsEl) return;
   if(!errors.length){
-    alertsEl.innerHTML = `<div class="sum-alert ok"><i class="bi bi-check-circle"></i>Walidacja zakończona sukcesem. Możesz wygenerować dokumentację.</div>`;
+    updateQuickFixCta(null);
+    alertsEl.innerHTML = `<div class="sum-alert ok"><i class="bi bi-check-circle"></i><div><strong>Brak błędów walidacji.</strong><div>Gotowe do generacji dokumentacji.</div></div></div>`;
     return;
   }
 
+  const suggestions = getPrioritySuggestions(errors);
+  updateQuickFixCta(suggestions[0]);
+  const suggestionHtml = suggestions.map(s=>`
+    <div class="sum-priority">
+      <div class="sum-priority-title">${s.title}</div>
+      <div class="sum-priority-body">${s.body}</div>
+      <button class="sum-priority-cta" type="button" onclick="onPriorityCta('${s.tab}','${s.fieldId}')"><i class="bi bi-arrow-right-circle"></i>Przejdź i popraw</button>
+    </div>
+  `).join('');
+
   const list = errors.map(e=>`<li>${e.message}</li>`).join('');
-  alertsEl.innerHTML = `<div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i><div><div><strong>Popraw poniższe błędy:</strong></div><ul class="sum-alert-list">${list}</ul></div></div>`;
+  alertsEl.innerHTML = `
+    <div class="sum-priority-wrap">${suggestionHtml}</div>
+    <div class="sum-priority-rules">
+      <strong>Reguły priorytetyzacji</strong>
+      <ul>
+        <li>Wymagane pola z zakładek t1/t2 są najwyżej.</li>
+        <li>Błędy eksportu i formatów są obsługiwane niżej.</li>
+      </ul>
+    </div>
+    <div class="sum-alert warn"><i class="bi bi-exclamation-triangle"></i><div><div><strong>Popraw poniższe błędy:</strong></div><ul class="sum-alert-list">${list}</ul></div></div>
+  `;
 }
 
 function clearCurrentSection(){
@@ -2728,12 +2809,8 @@ function validateBeforeSubmit(){
 
   if(errors.length){
     if(!summaryOpen) toggleSummary();
-    const first = errors[0];
-    goTab(first.tab);
-    const firstField = document.getElementById(first.fieldId);
-    if(firstField){
-      firstField.focus({preventScroll:false});
-    }
+    const first = getPrioritySuggestions(errors)[0] || errors[0];
+    goToField(first.tab, first.fieldId);
     showToast('Uzupełnij wymagane pola przed generowaniem dokumentacji.','warning');
     return false;
   }
