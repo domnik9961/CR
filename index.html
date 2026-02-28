@@ -29,6 +29,11 @@
   --txt:#0f172a;
   --txt2:#334155;
   --muted:#64748b;
+  --color-success-bg:var(--g-l);
+  --color-warning-bg:var(--y-l);
+  --color-info-bg:var(--a-l);
+  --surface-elevated:linear-gradient(135deg,var(--a),var(--a-d));
+  --surface-overlay:var(--txt);
   --sidebar-w:260px;
   --sidebar-collapsed:64px;
   --summary-w:320px;
@@ -62,6 +67,11 @@ body.theme-dark{
   --txt:#e2e8f0;
   --txt2:#cbd5e1;
   --muted:#94a3b8;
+  --color-success-bg:#064e3b;
+  --color-warning-bg:#78350f;
+  --color-info-bg:#1e3a8a;
+  --surface-elevated:linear-gradient(135deg,#60a5fa,#3b82f6);
+  --surface-overlay:#020617;
   --shadow:0 1px 3px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.25);
   --shadow-md:0 8px 24px rgba(0,0,0,.38);
   --shadow-lg:0 20px 60px rgba(0,0,0,.5);
@@ -174,7 +184,7 @@ body{
   cursor:pointer;
 }
 .theme-switch-btn.active{
-  background:linear-gradient(135deg,var(--a),var(--a-d));
+  background:var(--surface-elevated);
   color:#fff;
 }
 .tb-btn{
@@ -393,7 +403,10 @@ body{
   background:var(--surface2);
   flex-shrink:0;
 }
+.sum-panel-head-actions{display:flex;align-items:center;gap:10px;}
 .sum-panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--txt);}
+.sum-compact-toggle{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted);}
+.sum-compact-toggle input{accent-color:var(--a);}
 .sum-panel-close{
   width:28px;height:28px;border-radius:6px;
   background:none;border:none;cursor:pointer;
@@ -438,8 +451,22 @@ body{
 .sum-ico-n{background:var(--surface3);color:var(--muted);}
 .sum-tab-name{font-size:12.5px;font-weight:600;flex:1;color:var(--txt2);}
 .sum-tab-pct{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--muted);}
+.sum-tab-meta{font-size:10px;color:var(--muted);margin-top:2px;display:block;}
+.compact-hidden{display:none;}
 
 .sum-divider{border:none;border-top:1px solid var(--border);margin:12px 0;}
+.sum-section{margin-bottom:10px;}
+.sum-accordion-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--txt2);
+  border-radius:8px;padding:8px 10px;cursor:pointer;font-size:10px;font-weight:800;
+  letter-spacing:.8px;text-transform:uppercase;transition:all var(--trans);
+}
+.sum-accordion-btn:hover{border-color:var(--a);color:var(--a);}
+.sum-accordion-btn .bi{font-size:12px;transition:transform var(--trans);}
+.sum-section.collapsed .sum-accordion-btn .bi{transform:rotate(-90deg);}
+.sum-section-body{padding-top:8px;}
+.sum-section.collapsed .sum-section-body{display:none;}
 
 /* Summary detail items */
 .sum-detail{background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:6px;}
@@ -449,8 +476,8 @@ body{
 
 /* Alert items */
 .sum-alert{display:flex;gap:7px;padding:8px 10px;border-radius:7px;font-size:11.5px;line-height:1.5;margin-bottom:5px;}
-.sum-alert.warn{background:var(--y-l);color:#78350f;}
-.sum-alert.ok{background:var(--g-l);color:#064e3b;}
+.sum-alert.warn{background:var(--color-warning-bg);color:var(--y);}
+.sum-alert.ok{background:var(--color-success-bg);color:var(--g);}
 .sum-alert i{flex-shrink:0;font-size:13px;margin-top:1px;}
 .sum-priority-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:8px;}
 .sum-priority{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;}
@@ -557,12 +584,12 @@ body{
 .req-star{color:var(--r);font-size:12px;}
 .tip-btn{
   width:15px;height:15px;border-radius:50%;
-  background:var(--surface3);border:1px solid var(--border2);
+  background:var(--surface-elevated);border:1px solid var(--border2);
   color:var(--muted);cursor:help;display:grid;place-items:center;
   font-size:9px;transition:all var(--trans);flex-shrink:0;
   font-style:normal;
 }
-.tip-btn:hover{background:var(--a-l);border-color:var(--a);color:var(--a);}
+.tip-btn:hover{background:var(--color-info-bg);border-color:var(--a);color:var(--a);}
 /* tooltip popup */
 .tip-btn{position:relative;}
 .tip-popup{
@@ -602,6 +629,16 @@ body{
   transition:opacity .16s,transform .16s;
 }
 .global-tip.visible{opacity:1;transform:translateY(0);}
+
+@media (prefers-contrast: more), (forced-colors: active){
+  .global-tip{
+    border:2px solid currentColor;
+    background:#000;
+    color:#fff;
+    box-shadow:none;
+    opacity:1;
+  }
+}
 
 @media(max-width:900px){
   .tip-popup{left:auto;right:0;transform:translateY(5px);}
@@ -846,15 +883,15 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 /* ══════════ TOAST ══════════ */
 .toast-container{position:fixed;bottom:80px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
 .toast{
-  background:var(--txt);color:#fff;border-radius:10px;
+  background:var(--surface-overlay);color:#fff;border-radius:10px;
   padding:11px 16px;font-size:13px;font-weight:600;
   display:flex;align-items:center;gap:9px;
   box-shadow:var(--shadow-lg);min-width:220px;
   animation:toastIn .3s var(--bounce) both;
   font-family:'Epilogue',sans-serif;
 }
-.toast.success{background:var(--g);}
-.toast.warning{background:var(--y);}
+.toast.success{background:var(--color-success-bg);color:var(--g);}
+.toast.warning{background:var(--color-warning-bg);color:var(--y);}
 .toast.removing{animation:toastOut .25s ease forwards;}
 
 /* ══════════ MOBILE OVERLAY ══════════ */
@@ -910,7 +947,7 @@ input[type=color]{border-radius:6px;border:1.5px solid var(--border);cursor:poin
 select.fs option{background:#fff;}
 body.theme-dark .topbar,
 body.theme-dark .footer-bar{background:rgba(17,24,39,.9);}
-body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
+body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
 </style>
 </head>
 <body>
@@ -935,6 +972,7 @@ body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
     <div class="theme-switch" role="group" aria-label="Tryb kolorystyczny">
       <button class="theme-switch-btn active" id="themeLightBtn" type="button" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i><span>Jasny</span></button>
       <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>Ciemny</span></button>
+      <button class="theme-switch-btn" id="themeAutoBtn" type="button" onclick="setTheme('auto')"><i class="bi bi-circle-half"></i><span>Auto</span></button>
     </div>
     <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
@@ -1785,7 +1823,13 @@ body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
   <aside class="summary-panel" id="summaryPanel">
     <div class="sum-panel-head">
       <span class="sum-panel-title"><i class="bi bi-clipboard-data me-2"></i>Podsumowanie</span>
-      <button class="sum-panel-close" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
+      <div class="sum-panel-head-actions">
+        <label class="sum-compact-toggle" for="summaryCompactToggle">
+          <input id="summaryCompactToggle" type="checkbox" onchange="setSummaryCompact(this.checked)">
+          <span>Tryb kompaktowy</span>
+        </label>
+        <button class="sum-panel-close" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
+      </div>
     </div>
     <div class="sum-panel-body" id="sumPanelBody">
       <div class="sum-score">
@@ -1805,26 +1849,39 @@ body.theme-dark .global-tip{background:#020617;color:#e2e8f0;}
         <div class="score-status-txt" id="scoreStatusTxt" style="color:var(--muted)">Uzupełnij pola aby śledzić postęp</div>
       </div>
 
-      <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 12px">
-
-      <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Zakładki</div>
-      <div id="sumTabList"></div>
-
-      <div class="sum-detail" style="margin-top:8px">
-        <div class="sum-detail-label">Szybkie akcje</div>
-        <div class="sum-detail-val" style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="tchip" type="button" onclick="goTab('t1');toggleSummary(false)"><i class="bi bi-pencil-square"></i> Edytuj metadane</button>
-          <button class="tchip g" type="button" onclick="goTab('t10');toggleSummary(false)"><i class="bi bi-filetype-pdf"></i> Eksport</button>
+      <div class="sum-section" id="sumSectionTabs">
+        <button class="sum-accordion-btn" type="button" onclick="toggleSummarySection('sumSectionTabs')">
+          <span>Zakładki</span><i class="bi bi-chevron-down"></i>
+        </button>
+        <div class="sum-section-body">
+          <div id="sumTabList"></div>
+          <div class="sum-detail" style="margin-top:8px">
+            <div class="sum-detail-label">Szybkie akcje</div>
+            <div class="sum-detail-val" style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="tchip" type="button" onclick="goTab('t1');toggleSummary(false)"><i class="bi bi-pencil-square"></i> Edytuj metadane</button>
+              <button class="tchip g" type="button" onclick="goTab('t10');toggleSummary(false)"><i class="bi bi-filetype-pdf"></i> Eksport</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <div class="sum-section" id="sumSectionDetails">
+        <button class="sum-accordion-btn" type="button" onclick="toggleSummarySection('sumSectionDetails')">
+          <span>Szczegóły</span><i class="bi bi-chevron-down"></i>
+        </button>
+        <div class="sum-section-body">
+          <div id="sumDetails"></div>
+        </div>
+      </div>
 
-      <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding:0 4px">Szczegóły</div>
-      <div id="sumDetails"></div>
-
-      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
-      <div id="sumAlerts"></div>
+      <div class="sum-section" id="sumSectionAlerts">
+        <button class="sum-accordion-btn" type="button" onclick="toggleSummarySection('sumSectionAlerts')">
+          <span>Alerty</span><i class="bi bi-chevron-down"></i>
+        </button>
+        <div class="sum-section-body">
+          <div id="sumAlerts"></div>
+        </div>
+      </div>
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
         <button class="btn-primary" id="generateDocumentationBtn" type="button" style="width:100%;justify-content:center" onclick="validateBeforeSubmit()"><i class="bi bi-file-earmark-text"></i>Generuj dokumentację</button>
@@ -1872,21 +1929,137 @@ const TABS = [
 const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
 let summaryOpen = false;
+let summaryCompact = false;
 let currentTab = 't1';
 let activeTipBtn = null;
-let topPriorityError = null;
+const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+function applyAutoTheme(event){
+  const prefersDark = typeof event?.matches === 'boolean' ? event.matches : themeMediaQuery.matches;
+  document.body.classList.toggle('theme-dark', prefersDark);
+}
 
 function setTheme(mode){
-  const dark = mode === 'dark';
-  document.body.classList.toggle('theme-dark', dark);
-  document.getElementById('themeLightBtn').classList.toggle('active', !dark);
-  document.getElementById('themeDarkBtn').classList.toggle('active', dark);
-  localStorage.setItem('rf-theme', dark ? 'dark' : 'light');
+  const themeMode = mode === 'dark' || mode === 'auto' ? mode : 'light';
+  themeMediaQuery.removeEventListener('change', applyAutoTheme);
+
+  if(themeMode === 'auto'){
+    applyAutoTheme();
+    themeMediaQuery.addEventListener('change', applyAutoTheme);
+  } else {
+    document.body.classList.toggle('theme-dark', themeMode === 'dark');
+  }
+
+  document.getElementById('themeLightBtn').classList.toggle('active', themeMode === 'light');
+  document.getElementById('themeDarkBtn').classList.toggle('active', themeMode === 'dark');
+  document.getElementById('themeAutoBtn').classList.toggle('active', themeMode === 'auto');
+  localStorage.setItem('rf-theme', themeMode);
 }
 
 function initTheme(){
   const saved = localStorage.getItem('rf-theme');
-  setTheme(saved === 'dark' ? 'dark' : 'light');
+  const initial = saved === 'dark' || saved === 'auto' ? saved : 'light';
+  setTheme(initial);
+}
+
+function getTipText(btn){
+  const popup = btn.querySelector('.tip-popup');
+  return popup ? popup.textContent.trim() : '';
+}
+
+function updateTipAria(btn, expanded){
+  const hasText = !!getTipText(btn);
+  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  btn.setAttribute('aria-label', expanded ? 'Ukryj podpowiedź' : (hasText ? `Pokaż podpowiedź: ${getTipText(btn)}` : 'Pokaż podpowiedź'));
+}
+
+function showGlobalTip(btn){
+  const tipEl = document.getElementById('globalTip');
+  const text = getTipText(btn);
+  if(!tipEl || !text) return;
+  const popup = btn.querySelector('.tip-popup');
+  if(!popup) return;
+
+  if(activeTipBtn && activeTipBtn !== btn) hideGlobalTip(activeTipBtn, false);
+
+  tipEl.textContent = text;
+  const rect = btn.getBoundingClientRect();
+  const top = rect.bottom + 8;
+  const left = Math.min(Math.max(rect.left + rect.width / 2, 12), window.innerWidth - 12);
+
+  tipEl.style.top = `${top}px`;
+  tipEl.style.left = `${left}px`;
+  tipEl.style.transform = 'translate(-50%, 0)';
+  tipEl.classList.add('visible');
+  tipEl.setAttribute('aria-hidden', 'false');
+
+  btn.setAttribute('aria-describedby', 'globalTip');
+  updateTipAria(btn, true);
+  activeTipBtn = btn;
+}
+
+function hideGlobalTip(btn = activeTipBtn, clearActive = true){
+  const tipEl = document.getElementById('globalTip');
+  if(!tipEl || !btn) return;
+  tipEl.classList.remove('visible');
+  tipEl.setAttribute('aria-hidden', 'true');
+  btn.removeAttribute('aria-describedby');
+  updateTipAria(btn, false);
+  if(clearActive && activeTipBtn === btn) activeTipBtn = null;
+}
+
+function initGlobalTooltips(){
+  const tipEl = document.getElementById('globalTip');
+  if(!tipEl) return;
+  tipEl.setAttribute('role', 'tooltip');
+
+  document.querySelectorAll('.tip-btn').forEach(btn=>{
+    if(btn.tabIndex < 0) btn.tabIndex = 0;
+    btn.setAttribute('role', 'button');
+    updateTipAria(btn, false);
+
+    btn.addEventListener('mouseenter', ()=>showGlobalTip(btn));
+    btn.addEventListener('focus', ()=>showGlobalTip(btn));
+
+    btn.addEventListener('mouseleave', ()=>{
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+    });
+    btn.addEventListener('blur', ()=>{
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+    });
+
+    btn.addEventListener('click', e=>{
+      e.preventDefault();
+      if(activeTipBtn === btn) hideGlobalTip(btn);
+      else showGlobalTip(btn);
+    });
+
+    btn.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        showGlobalTip(btn);
+      }
+      if(e.key === 'Escape'){
+        e.preventDefault();
+        hideGlobalTip(btn);
+        btn.blur();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape' && activeTipBtn){
+      hideGlobalTip(activeTipBtn);
+    }
+  });
+
+  window.addEventListener('resize', ()=>{
+    if(activeTipBtn) showGlobalTip(activeTipBtn);
+  });
+
+  window.addEventListener('scroll', ()=>{
+    if(activeTipBtn) showGlobalTip(activeTipBtn);
+  }, true);
 }
 
 // ── SIDEBAR TOGGLE ──
@@ -1903,6 +2076,27 @@ function openMobileMenu(){
 function closeMobileMenu(){
   document.getElementById('sidebar').classList.remove('mobile-open');
   document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+
+function initSummaryCompact(){
+  summaryCompact = localStorage.getItem('rf-summary-compact') === '1';
+  const compactToggle = document.getElementById('summaryCompactToggle');
+  if(compactToggle) compactToggle.checked = summaryCompact;
+}
+
+function setSummaryCompact(nextState){
+  summaryCompact = !!nextState;
+  localStorage.setItem('rf-summary-compact', summaryCompact ? '1' : '0');
+  const compactToggle = document.getElementById('summaryCompactToggle');
+  if(compactToggle) compactToggle.checked = summaryCompact;
+  buildSummaryPanel();
+}
+
+function toggleSummarySection(sectionId){
+  const section = document.getElementById(sectionId);
+  if(!section) return;
+  section.classList.toggle('collapsed');
 }
 
 // ── SUMMARY PANEL ──
@@ -2238,15 +2432,19 @@ function buildSummaryPanel(tabData, pct){
     pct = Math.round(tabData.reduce((acc,t)=>acc+t.progress,0)/TABS.length);
   }
 
+  const compactClass = summaryCompact ? 'sum-tab-meta compact-hidden' : 'sum-tab-meta';
+
   // Tab list
   const tl = document.getElementById('sumTabList');
   tl.innerHTML = tabData.map((t,i)=>{
     const icoClass = t.status==='complete'?'sum-ico-g':t.status==='partial'?'sum-ico-y':'sum-ico-n';
     const icoI = t.status==='complete'?'bi-check':'bi-dash';
     const pctTxt = `${t.progress}%`;
+    const statusText = t.status==='complete'?'Kompletna':t.status==='partial'?'W trakcie':'Do uzupełnienia';
+    const reqInfo = t.required?.length ? `Wymagane: ${t.required.length}` : 'Brak pól wymaganych';
     return `<div class="sum-tab-row" onclick="goTab('${t.id}');toggleSummary(false)">
       <div class="tab-ico sum-tab-ico ${icoClass}"><i class="bi ${icoI}"></i></div>
-      <span class="sum-tab-name">${t.name}</span>
+      <div class="sum-tab-name">${t.name}<span class="${compactClass}">${statusText} · ${reqInfo}</span></div>
       <span class="sum-tab-pct">${pctTxt}</span>
     </div>`;
   }).join('');
@@ -2268,13 +2466,21 @@ function buildSummaryPanel(tabData, pct){
   const safeRStatus = escapeHtml(rStatus);
   const safeSqlLabel = escapeHtml(sqlLabels[sqlType] || '—');
 
-  document.getElementById('sumDetails').innerHTML = `
-    <div class="sum-detail"><div class="sum-detail-label">Nazwa raportu</div><div class="sum-detail-val ${!rName?'empty':''}">${safeRName}</div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Tytuł wyświetlany</div><div class="sum-detail-val ${!rTitle?'empty':''}">${safeRTitle}</div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Status · Źródło SQL</div><div class="sum-detail-val"><span class="sum-badge blue">${safeRStatus}</span> <span class="sum-badge ${sqlType?'green':'yellow'}">${safeSqlLabel}</span></div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Kolumny · Parametry · Grupy · SR</div><div class="sum-detail-val">${cols} · ${params} · ${groups} · ${srs}</div></div>
-    <div class="sum-detail"><div class="sum-detail-label">Aktywne formaty eksportu</div><div class="sum-detail-val">${activeFmts} aktywnych</div></div>
-  `;
+  if(summaryCompact){
+    document.getElementById('sumDetails').innerHTML = `
+      <div class="sum-detail"><div class="sum-detail-label">Status · Postęp</div><div class="sum-detail-val"><span class="sum-badge blue">${safeRStatus}</span> <span class="sum-badge green">${pct}%</span></div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Najważniejsze liczniki</div><div class="sum-detail-val">Kolumny: ${cols} · Parametry: ${params} · Grupy: ${groups} · SR: ${srs}</div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Źródło · Eksport</div><div class="sum-detail-val"><span class="sum-badge ${sqlType?'green':'yellow'}">${safeSqlLabel}</span> <span class="sum-badge blue">Formaty: ${activeFmts}</span></div></div>
+    `;
+  } else {
+    document.getElementById('sumDetails').innerHTML = `
+      <div class="sum-detail"><div class="sum-detail-label">Nazwa raportu</div><div class="sum-detail-val ${!rName?'empty':''}">${safeRName}</div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Tytuł wyświetlany</div><div class="sum-detail-val ${!rTitle?'empty':''}">${safeRTitle}</div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Status · Źródło SQL</div><div class="sum-detail-val"><span class="sum-badge blue">${safeRStatus}</span> <span class="sum-badge ${sqlType?'green':'yellow'}">${safeSqlLabel}</span></div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Kolumny · Parametry · Grupy · SR</div><div class="sum-detail-val">${cols} · ${params} · ${groups} · ${srs}</div></div>
+      <div class="sum-detail"><div class="sum-detail-label">Aktywne formaty eksportu</div><div class="sum-detail-val">${activeFmts} aktywnych</div></div>
+    `;
+  }
 
   // Alerts
   const validationErrors = getValidationErrors();
@@ -2478,6 +2684,7 @@ document.addEventListener('keydown', e=>{
 // Add initial filter group
 addFilterGroup();
 initTheme();
+initSummaryCompact();
 initGlobalTooltips();
 // Initial update
 setTimeout(updateAll, 300);
