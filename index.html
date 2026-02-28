@@ -300,7 +300,6 @@ body{
   min-width:0;
 }
 .body-sidebar-collapsed .main{margin-left:var(--sidebar-collapsed);}
-.body-summary-open .main{margin-right:var(--summary-w);}
 
 .tab-content{
   padding:28px 32px 100px;
@@ -323,12 +322,25 @@ body{
   border-left:1px solid var(--border);
   transform:translateX(100%);
   transition:transform var(--trans);
-  z-index:140;
+  z-index:260;
   display:flex;flex-direction:column;
   box-shadow:-4px 0 24px rgba(15,23,42,.08);
   animation:slideInRight .4s .2s ease both;
 }
 .body-summary-open .summary-panel{transform:translateX(0);}
+.summary-backdrop{
+  position:fixed;
+  inset:var(--topbar-h) 0 0;
+  background:rgba(15,23,42,.3);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity var(--trans);
+  z-index:250;
+}
+.body-summary-open .summary-backdrop{
+  opacity:1;
+  pointer-events:auto;
+}
 .sum-panel-head{
   padding:16px 18px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
@@ -432,7 +444,7 @@ body{
   border-radius:var(--radius);
   box-shadow:var(--shadow);
   margin-bottom:18px;
-  overflow:hidden;
+  overflow:visible;
   transition:box-shadow var(--trans),transform var(--trans);
   animation:fadeUp .3s ease both;
 }
@@ -499,10 +511,10 @@ body{
 /* tooltip popup */
 .tip-btn{position:relative;}
 .tip-popup{
-  position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
   background:var(--txt);color:#fff;border-radius:9px;
   padding:9px 13px;font-size:11.5px;line-height:1.55;
-  white-space:normal;max-width:260px;min-width:160px;
+  white-space:normal;max-width:min(300px,calc(100vw - 24px));min-width:160px;
   pointer-events:none;z-index:500;
   opacity:0;transform:translateX(-50%) translateY(5px);
   transition:opacity .18s,transform .18s;
@@ -511,11 +523,17 @@ body{
   box-shadow:0 8px 30px rgba(0,0,0,.25);
 }
 .tip-popup::after{
-  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
-  border:5px solid transparent;border-top-color:var(--txt);
+  content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-bottom-color:var(--txt);
 }
 .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{
   opacity:1;transform:translateX(-50%) translateY(0);
+}
+
+@media(max-width:900px){
+  .tip-popup{left:auto;right:0;transform:translateY(5px);}
+  .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{transform:translateY(0);}
+  .tip-popup::after{left:auto;right:8px;transform:none;}
 }
 
 .fc,.fs{
@@ -656,7 +674,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .warn-alert i{color:var(--y);}
 
 /* ══════════ HF ZONES ══════════ */
-.hf-zone{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;transition:all var(--trans);}
+.hf-zone{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:visible;transition:all var(--trans);}
 .hf-zone:hover{border-color:var(--border2);box-shadow:var(--shadow);}
 .hf-zone-head{padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800;cursor:pointer;}
 .hf-rh{background:linear-gradient(135deg,#d1fae5,#a7f3d0)!important;color:#065f46;}
@@ -669,7 +687,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .hf-zone.hf-collapsed .hf-chevron{transform:rotate(-90deg);}
 
 /* ══════════ SUBREPORT CARDS ══════════ */
-.sr-card{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:all var(--trans);}
+.sr-card{border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:visible;transition:all var(--trans);}
 .sr-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
 .sr-head{padding:11px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .sr-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
@@ -688,7 +706,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .sr-pane.active{display:block;animation:tabPaneFade .25s ease;}
 
 /* ══════════ CONDITION BUILDER ══════════ */
-.cond-group{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;transition:all var(--trans);}
+.cond-group{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:visible;transition:all var(--trans);}
 .cond-group-bar{background:var(--surface2);padding:9px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .logic-sel{background:var(--surface);border:1.5px solid var(--border);color:var(--a);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Epilogue',sans-serif;}
 
@@ -699,7 +717,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .es-sub{font-size:13px;color:var(--muted);}
 
 /* ══════════ FORMAT CARDS ══════════ */
-.fmt-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;transition:all var(--trans);}
+.fmt-card{border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:visible;transition:all var(--trans);}
 .fmt-card:hover{border-color:var(--border2);}
 .fmt-card:has(.fmt-cb:checked){border-color:var(--a);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
 .fmt-head{padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--surface2);cursor:pointer;transition:all var(--trans);}
@@ -742,7 +760,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   box-shadow:0 -4px 20px rgba(15,23,42,.06);
 }
 .body-sidebar-collapsed .footer-bar{left:var(--sidebar-collapsed);}
-.body-summary-open .footer-bar{right:var(--summary-w);}
 .footer-info{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:10px;}
 .footer-step{background:var(--a-l);color:var(--a);padding:2px 8px;border-radius:20px;font-weight:700;}
 .footer-actions{display:flex;gap:8px;}
@@ -792,8 +809,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   .body-summary-open .summary-panel{
     width:100vw;z-index:300;
   }
-  .body-summary-open .main{margin-right:0;}
-  .body-summary-open .footer-bar{right:0;}
 }
 @media(max-width:600px){
   .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr;}
@@ -835,8 +850,8 @@ select.fs option{background:#fff;}
   </div>
   <div class="topbar-right">
     <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
-    <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
+    <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button class="tb-btn primary" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
 </nav>
 
@@ -910,7 +925,7 @@ select.fs option{background:#fff;}
       <button class="sidebar-footer-btn" onclick="showToast('Szkic zapisany!','success')">
         <i class="bi bi-save"></i><span class="tab-label">Zapisz szkic</span>
       </button>
-      <button class="sidebar-footer-btn" onclick="toggleSummary()">
+      <button class="sidebar-footer-btn" data-summary-toggle onclick="toggleSummary()">
         <i class="bi bi-eye"></i><span class="tab-label">Podgląd podsumowania</span>
       </button>
     </div>
@@ -1679,10 +1694,11 @@ select.fs option{background:#fff;}
   </main>
 
   <!-- ═══ SUMMARY PANEL ═══ -->
+  <button class="summary-backdrop" id="summaryBackdrop" type="button" onclick="toggleSummary(false)" aria-label="Zamknij podsumowanie"></button>
   <aside class="summary-panel" id="summaryPanel">
     <div class="sum-panel-head">
       <span class="sum-panel-title"><i class="bi bi-clipboard-data me-2"></i>Podsumowanie</span>
-      <button class="sum-panel-close" onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
+      <button class="sum-panel-close" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="sum-panel-body" id="sumPanelBody">
       <div class="sum-score">
@@ -1732,7 +1748,7 @@ select.fs option{background:#fff;}
   </div>
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
-    <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
+    <button class="tb-btn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
 </div>
@@ -1777,10 +1793,12 @@ function closeMobileMenu(){
 }
 
 // ── SUMMARY PANEL ──
-function toggleSummary(){
-  summaryOpen = !summaryOpen;
+function toggleSummary(forceState){
+  const nextState = typeof forceState === 'boolean' ? forceState : !summaryOpen;
+  if(nextState === summaryOpen) return;
+  summaryOpen = nextState;
   document.body.classList.toggle('body-summary-open', summaryOpen);
-  document.getElementById('summaryToggleBtn').classList.toggle('active', summaryOpen);
+  document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.toggle('active', summaryOpen));
   if(summaryOpen) buildSummaryPanel();
 }
 
@@ -2097,7 +2115,7 @@ function buildSummaryPanel(tabData, pct){
     const icoClass = t.status==='complete'?'sum-ico-g':t.status==='partial'?'sum-ico-y':'sum-ico-n';
     const icoI = t.status==='complete'?'bi-check':'bi-dash';
     const pctTxt = `${t.progress}%`;
-    return `<div class="sum-tab-row" onclick="goTab('${t.id}')">
+    return `<div class="sum-tab-row" onclick="goTab('${t.id}');toggleSummary(false)">
       <div class="tab-ico sum-tab-ico ${icoClass}"><i class="bi ${icoI}"></i></div>
       <span class="sum-tab-name">${t.name}</span>
       <span class="sum-tab-pct">${pctTxt}</span>
@@ -2270,6 +2288,10 @@ document.addEventListener('input', e=>{
 });
 document.addEventListener('change', e=>{
   if(e.target.matches('input,textarea,select')) scheduleUpdate();
+});
+
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape' && summaryOpen) toggleSummary(false);
 });
 
 // ── INIT ──
