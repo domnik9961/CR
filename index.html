@@ -834,7 +834,8 @@ select.fs option{background:#fff;}
     <span class="progress-label" id="progressLabel">0% gotowe</span>
   </div>
   <div class="topbar-right">
-    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="loadDraft(true)"><i class="bi bi-arrow-clockwise"></i><span>Wczytaj szkic</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
@@ -907,7 +908,7 @@ select.fs option{background:#fff;}
     </div>
 
     <div class="sidebar-footer">
-      <button class="sidebar-footer-btn" onclick="showToast('Szkic zapisany!','success')">
+      <button class="sidebar-footer-btn" onclick="saveDraft()">
         <i class="bi bi-save"></i><span class="tab-label">Zapisz szkic</span>
       </button>
       <button class="sidebar-footer-btn" onclick="toggleSummary()">
@@ -1733,7 +1734,7 @@ select.fs option{background:#fff;}
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
     <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="btn-primary" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
 </div>
 
@@ -1759,6 +1760,8 @@ const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
 let summaryOpen = false;
 let currentTab = 't1';
+const DRAFT_STORAGE_KEY = 'cr-report-draft-v1';
+const DRAFT_SCHEMA_VERSION = 1;
 
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(){
@@ -2273,8 +2276,8 @@ document.addEventListener('change', e=>{
 });
 
 // ── INIT ──
-// Add initial filter group
-addFilterGroup();
+// Add initial filter group or load draft
+if(!loadDraft(false)) addFilterGroup();
 // Initial update
 setTimeout(updateAll, 300);
 
