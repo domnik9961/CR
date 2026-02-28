@@ -780,6 +780,16 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
 .dt input:focus,.dt select:focus{outline:none;border-color:var(--a);}
 .row-num{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-align:center;}
 .drag-handle{color:var(--border2);cursor:grab;font-size:14px;display:block;text-align:center;}
+.row-move{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;}
+.btn-move{
+  width:22px;height:22px;border-radius:6px;
+  border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);
+  display:grid;place-items:center;
+  cursor:pointer;font-size:11px;
+  transition:all var(--trans);
+}
+.btn-move:hover{border-color:var(--a);color:var(--a);background:var(--a-l);}
 
 /* ══════════ BUTTONS ══════════ */
 .btn-add{
@@ -1436,7 +1446,7 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
             <div class="dt-wrap">
               <table class="dt" id="colTable">
                 <thead><tr>
-                  <th></th><th>#</th>
+                  <th></th><th>↕</th><th>#</th>
                   <th>Pole DB / formuła <i class="tip-btn" style="font-size:9px">?<span class="tip-popup">Nazwa pola z widoku/SP lub formuły CR np. {@NazwaFormuly}. Musi dokładnie odpowiadać kolumnie.</span></i></th>
                   <th>Nagłówek</th><th>Typ danych</th><th>Format / maska</th>
                   <th>Widoczna</th><th>Sumować</th><th>Wyrów.</th><th>CF</th><th></th>
@@ -1444,6 +1454,12 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
                 <tbody id="colBody">
                   <tr>
                     <td><span class="drag-handle"><i class="bi bi-grip-vertical"></i></span></td>
+                    <td>
+                      <div class="row-move">
+                        <button class="btn-move" type="button" onclick="moveColRow(this,-1)" title="Przesuń w górę"><i class="bi bi-chevron-up"></i></button>
+                        <button class="btn-move" type="button" onclick="moveColRow(this,1)" title="Przesuń w dół"><i class="bi bi-chevron-down"></i></button>
+                      </div>
+                    </td>
                     <td class="row-num">1</td>
                     <td><input type="text" class="mono" placeholder="total_amount"/></td>
                     <td><input type="text" placeholder="Wartość"/></td>
@@ -2286,10 +2302,31 @@ function removeRow(btn){
 }
 function renumber(tb){ if(!tb)return; Array.from(tb.rows).forEach((r,i)=>{ const c=r.querySelector('.row-num'); if(c) c.textContent=i+1; }); }
 
+function moveColRow(btn, direction){
+  const tr = btn.closest('tr');
+  const tb = tr?.closest('tbody');
+  if(!tr || !tb) return;
+  const target = direction < 0 ? tr.previousElementSibling : tr.nextElementSibling;
+  if(!target) return;
+  if(direction < 0){
+    tb.insertBefore(tr, target);
+  }else{
+    tb.insertBefore(target, tr);
+  }
+  renumber(tb);
+  scheduleUpdate();
+}
+
 // ── ADD COLUMN ──
 function colRowHtml(n, type=''){
   return `<tr>
     <td><span class="drag-handle"><i class="bi bi-grip-vertical"></i></span></td>
+    <td>
+      <div class="row-move">
+        <button class="btn-move" type="button" onclick="moveColRow(this,-1)" title="Przesuń w górę"><i class="bi bi-chevron-up"></i></button>
+        <button class="btn-move" type="button" onclick="moveColRow(this,1)" title="Przesuń w dół"><i class="bi bi-chevron-down"></i></button>
+      </div>
+    </td>
     <td class="row-num">${n}</td>
     <td><input type="text" class="mono" placeholder="${type==='formula'?'{@FormulaNazwa}':type==='rt'?'#{RunningTotal}':'pole_db'}"/></td>
     <td><input type="text" placeholder="Nagłówek"/></td>
