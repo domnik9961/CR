@@ -600,6 +600,12 @@ body{
   .tip-popup::after{left:auto;right:8px;transform:none;}
 }
 
+@media(max-width:900px){
+  .tip-popup{left:auto;right:0;transform:translateY(5px);}
+  .tip-btn:hover .tip-popup,.tip-btn:focus .tip-popup{transform:translateY(0);}
+  .tip-popup::after{left:auto;right:8px;transform:none;}
+}
+
 .fc,.fs{
   background:var(--surface);border:1.5px solid var(--border);
   color:var(--txt);border-radius:var(--radius-sm);
@@ -2389,45 +2395,6 @@ document.addEventListener('change', e=>{
 document.addEventListener('keydown', e=>{
   if(e.key === 'Escape' && summaryOpen) toggleSummary(false);
 });
-
-function hideGlobalTip(){
-  const tip = document.getElementById('globalTip');
-  if(!tip) return;
-  tip.classList.remove('visible');
-  tip.setAttribute('aria-hidden','true');
-  activeTipBtn = null;
-}
-
-function showGlobalTip(btn){
-  const popup = btn.querySelector('.tip-popup');
-  const tip = document.getElementById('globalTip');
-  if(!popup || !tip) return;
-  tip.textContent = popup.textContent || '';
-  tip.setAttribute('aria-hidden','false');
-
-  const r = btn.getBoundingClientRect();
-  tip.style.left = '0px';
-  tip.style.top = '0px';
-  tip.classList.add('visible');
-
-  const tr = tip.getBoundingClientRect();
-  const top = Math.min(window.innerHeight - tr.height - 10, r.bottom + 10);
-  const left = Math.min(window.innerWidth - tr.width - 10, Math.max(10, r.left - tr.width/2 + r.width/2));
-  tip.style.left = `${left}px`;
-  tip.style.top = `${top}px`;
-  activeTipBtn = btn;
-}
-
-function initGlobalTooltips(){
-  document.querySelectorAll('.tip-btn').forEach(btn=>{
-    btn.addEventListener('mouseenter', ()=>showGlobalTip(btn));
-    btn.addEventListener('focus', ()=>showGlobalTip(btn));
-    btn.addEventListener('mouseleave', hideGlobalTip);
-    btn.addEventListener('blur', hideGlobalTip);
-  });
-  window.addEventListener('scroll', ()=>{ if(activeTipBtn) showGlobalTip(activeTipBtn); }, true);
-  window.addEventListener('resize', ()=>{ if(activeTipBtn) showGlobalTip(activeTipBtn); });
-}
 
 // ── INIT ──
 // Add initial filter group
