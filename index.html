@@ -828,7 +828,8 @@ select.fs option{background:#fff;}
     <span class="progress-label" id="progressLabel">0% gotowe</span>
   </div>
   <div class="topbar-right">
-    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="loadDraft(true)"><i class="bi bi-arrow-clockwise"></i><span>Wczytaj szkic</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="tb-btn primary" onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
@@ -901,7 +902,7 @@ select.fs option{background:#fff;}
     </div>
 
     <div class="sidebar-footer">
-      <button class="sidebar-footer-btn" onclick="showToast('Szkic zapisany!','success')">
+      <button class="sidebar-footer-btn" onclick="saveDraft()">
         <i class="bi bi-save"></i><span class="tab-label">Zapisz szkic</span>
       </button>
       <button class="sidebar-footer-btn" onclick="toggleSummary()">
@@ -1602,7 +1603,8 @@ select.fs option{background:#fff;}
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
         <button class="btn-primary" style="width:100%;justify-content:center" onclick="showToast('Dokumentacja wygenerowana!','success')"><i class="bi bi-file-earmark-text"></i>Generuj dokumentację</button>
-        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="showToast('Dane skopiowane!','success')"><i class="bi bi-clipboard"></i>Kopiuj jako JSON</button>
+        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="copyDraftJson()"><i class="bi bi-clipboard"></i>Kopiuj jako JSON</button>
+        <button class="btn-secondary" style="width:100%;justify-content:center" onclick="downloadDraftJson()"><i class="bi bi-download"></i>Pobierz JSON</button>
       </div>
     </div>
   </aside>
@@ -1618,7 +1620,7 @@ select.fs option{background:#fff;}
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
     <button class="tb-btn" onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
-    <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="btn-primary" onclick="saveDraft()"><i class="bi bi-save"></i><span>Zapisz</span></button>
   </div>
 </div>
 
@@ -1644,6 +1646,8 @@ const STEP_NAMES = TABS.map(t=>t.name);
 let sidebarOpen = true;
 let summaryOpen = false;
 let currentTab = 't1';
+const DRAFT_STORAGE_KEY = 'cr-report-draft-v1';
+const DRAFT_SCHEMA_VERSION = 1;
 
 // ── SIDEBAR TOGGLE ──
 function toggleSidebar(){
@@ -1956,6 +1960,163 @@ function showToast(msg, type=''){
   setTimeout(()=>{ t.classList.add('removing'); setTimeout(()=>t.remove(),250); }, 2500);
 }
 
+// ── DRAFT SERIALIZATION ──
+function collectFormState(){
+  const basicFieldIds = ['rName','rTitle','rVersion','rStatus','rPriority','rDesc','sqlType','rhTitle','emptyMsg'];
+  const basicFields = basicFieldIds.reduce((acc, id)=>{
+    const el = document.getElementById(id);
+    if(!el) return acc;
+    if(el.type === 'checkbox') acc[id] = !!el.checked;
+    else acc[id] = el.value;
+    return acc;
+  }, {});
+
+  const collectRows = (tbodyId)=>{
+    const tbody = document.getElementById(tbodyId);
+    return Array.from(tbody ? tbody.rows : []).map(row=>{
+      return Array.from(row.querySelectorAll('input,select,textarea')).map(el=>{
+        if(el.type === 'checkbox') return {type:'checkbox', value: !!el.checked};
+        return {type:'value', value: el.value};
+      });
+    });
+  };
+
+  return {
+    schemaVersion: DRAFT_SCHEMA_VERSION,
+    savedAt: new Date().toISOString(),
+    currentTab,
+    basicFields,
+    tables: {
+      colBody: collectRows('colBody'),
+      paramBody: collectRows('paramBody'),
+      groupBody: collectRows('groupBody'),
+    },
+    filters: {
+      fgc,
+      html: (document.getElementById('filterGroups') || {}).innerHTML || '',
+    },
+    subreports: {
+      html: (document.getElementById('subreportList') || {}).innerHTML || '',
+    },
+    exportFormats: {
+      html: (document.getElementById('fmtContainer') || {}).innerHTML || '',
+    },
+  };
+}
+
+function applyCollectedRows(tbodyId, rows){
+  const tbody = document.getElementById(tbodyId);
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  rows.forEach((cells, i)=>{
+    if(tbodyId === 'colBody') tbody.insertAdjacentHTML('beforeend', colRowHtml(i + 1));
+    if(tbodyId === 'paramBody') addParamRow();
+    if(tbodyId === 'groupBody') addGroupRow();
+    const row = tbody.rows[tbody.rows.length - 1];
+    const rowControls = Array.from(row.querySelectorAll('input,select,textarea'));
+    rowControls.forEach((el, idx)=>{
+      const cellState = cells[idx];
+      if(!cellState) return;
+      if(el.type === 'checkbox') el.checked = !!cellState.value;
+      else el.value = cellState.value || '';
+    });
+  });
+  renumber(tbody);
+}
+
+function migrateDraftSchema(draft){
+  if(!draft || typeof draft !== 'object') return null;
+  if(!draft.schemaVersion) return {...draft, schemaVersion: 1};
+  return draft;
+}
+
+function applyFormState(state){
+  const migrated = migrateDraftSchema(state);
+  if(!migrated || !migrated.schemaVersion){
+    showToast('Nieprawidłowy format szkicu.', 'warning');
+    return false;
+  }
+  const data = migrated;
+
+  Object.entries(data.basicFields || {}).forEach(([id, value])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.type === 'checkbox') el.checked = !!value;
+    else el.value = value || '';
+  });
+
+  applyCollectedRows('colBody', ((data.tables || {}).colBody) || []);
+  applyCollectedRows('paramBody', ((data.tables || {}).paramBody) || []);
+  applyCollectedRows('groupBody', ((data.tables || {}).groupBody) || []);
+
+  if(data.filters && typeof data.filters.html === 'string'){
+    document.getElementById('filterGroups').innerHTML = data.filters.html;
+    fgc = Number.isFinite(data.filters.fgc) ? data.filters.fgc : document.querySelectorAll('#filterGroups .cond-group').length;
+  }
+  if(data.subreports && typeof data.subreports.html === 'string'){
+    document.getElementById('subreportList').innerHTML = data.subreports.html;
+  }
+  if(data.exportFormats && typeof data.exportFormats.html === 'string'){
+    document.getElementById('fmtContainer').innerHTML = data.exportFormats.html;
+  }
+
+  toggleSqlFields();
+  document.querySelectorAll('input[type=text],textarea').forEach(el=>{
+    el.classList.toggle('filled', el.value.trim().length > 0);
+  });
+
+  if(data.currentTab && document.getElementById(data.currentTab)) goTab(data.currentTab);
+  scheduleUpdate();
+  return true;
+}
+
+function saveDraft(){
+  const draft = collectFormState();
+  localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  showToast('Szkic zapisany lokalnie.', 'success');
+}
+
+function loadDraft(manual = false){
+  const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+  if(!raw){
+    if(manual) showToast('Brak zapisanego szkicu.', 'warning');
+    return false;
+  }
+  try{
+    const parsed = JSON.parse(raw);
+    const ok = applyFormState(parsed);
+    if(ok && manual) showToast('Szkic wczytany.', 'success');
+    return ok;
+  }catch(_err){
+    if(manual) showToast('Nie udało się wczytać szkicu.', 'warning');
+    return false;
+  }
+}
+
+async function copyDraftJson(){
+  const json = JSON.stringify(collectFormState(), null, 2);
+  if(!navigator.clipboard || !navigator.clipboard.writeText){
+    showToast('Schowek niedostępny w tej przeglądarce.', 'warning');
+    return;
+  }
+  await navigator.clipboard.writeText(json);
+  showToast('Dane skopiowane jako JSON.', 'success');
+}
+
+function downloadDraftJson(){
+  const json = JSON.stringify(collectFormState(), null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cr-report-draft-v${DRAFT_SCHEMA_VERSION}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Plik JSON pobrany.', 'success');
+}
+
 // ── INPUT CHANGE LISTENER ──
 document.addEventListener('input', e=>{
   if(e.target.matches('input,textarea,select')) scheduleUpdate();
@@ -1965,8 +2126,8 @@ document.addEventListener('change', e=>{
 });
 
 // ── INIT ──
-// Add initial filter group
-addFilterGroup();
+// Add initial filter group or load draft
+if(!loadDraft(false)) addFilterGroup();
 // Initial update
 setTimeout(updateAll, 300);
 
