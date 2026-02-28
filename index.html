@@ -1006,7 +1006,6 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr;}
   .page-header h1{font-size:20px;}
   .tb-btn span{display:none;}
-  .theme-switch-btn span{display:none;}
   .topbar-right .tb-btn:not(.primary){display:none;}
   .dt{min-width:400px;}
 }
@@ -1046,9 +1045,9 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
   </div>
   <div class="topbar-right">
     <div class="theme-switch" role="group" aria-label="Tryb kolorystyczny">
-      <button class="theme-switch-btn active" id="themeLightBtn" type="button" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i><span>Jasny</span></button>
-      <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>Ciemny</span></button>
-      <button class="theme-switch-btn" id="themeAutoBtn" type="button" onclick="setTheme('auto')"><i class="bi bi-circle-half"></i><span>Auto</span></button>
+      <button class="theme-switch-btn active" id="themeLightBtn" type="button" onclick="setTheme('light')"><i class="bi bi-sun-fill"></i><span>LIGHT</span></button>
+      <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>DARK MODE</span></button>
+      <button class="theme-switch-btn" id="themeAutoBtn" type="button" onclick="setTheme('auto')"><i class="bi bi-circle-half"></i><span>AUTO PLUS</span></button>
     </div>
     <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
@@ -2167,6 +2166,13 @@ function initSummaryCompact(){
   if(compactToggle) compactToggle.checked = summaryCompact;
 }
 
+function syncSummaryVisibilityState(){
+  document.body.classList.remove('body-summary-open','body-summary-closing');
+  document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.remove('active'));
+  const panel = document.getElementById('summaryPanel');
+  if(panel) panel.setAttribute('aria-hidden', summaryOpen ? 'false' : 'true');
+}
+
 function setSummaryCompact(nextState){
   summaryCompact = !!nextState;
   localStorage.setItem('rf-summary-compact', summaryCompact ? '1' : '0');
@@ -2196,6 +2202,7 @@ function toggleSummary(forceState){
     document.body.classList.remove('body-summary-closing');
     document.body.classList.add('body-summary-open');
     document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.add('active'));
+    document.getElementById('summaryPanel')?.setAttribute('aria-hidden','false');
     buildSummaryPanel();
     return;
   }
@@ -2204,6 +2211,7 @@ function toggleSummary(forceState){
   document.body.classList.remove('body-summary-open');
   document.body.classList.add('body-summary-closing');
   document.querySelectorAll('[data-summary-toggle]').forEach(btn=>btn.classList.remove('active'));
+  document.getElementById('summaryPanel')?.setAttribute('aria-hidden','true');
   summaryCloseTimer = setTimeout(()=>{
     document.body.classList.remove('body-summary-closing');
     summaryCloseTimer = null;
@@ -2852,6 +2860,7 @@ document.addEventListener('keydown', e=>{
 addFilterGroup();
 initTheme();
 initSummaryCompact();
+syncSummaryVisibilityState();
 initGlobalTooltips();
 // Initial update
 setTimeout(updateAll, 300);
