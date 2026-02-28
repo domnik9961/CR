@@ -392,6 +392,48 @@ body{
 .quick-action-chip.warning{background:var(--y-l);color:var(--y);}
 .quick-action-chip.success{background:var(--g-l);color:var(--g);}
 
+.form-refresh{
+  max-width:1100px;
+  margin:0 auto 20px;
+  padding:0 32px;
+}
+.form-refresh-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.refresh-option{
+  border:1.5px solid var(--border);
+  background:var(--surface);
+  border-radius:12px;
+  padding:14px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.refresh-option h3{font-size:14px;display:flex;align-items:center;gap:8px;}
+.refresh-option p{font-size:12px;color:var(--muted);line-height:1.45;}
+.refresh-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.refresh-tags span{font-size:10px;font-weight:700;padding:4px 8px;border-radius:999px;background:var(--surface2);color:var(--txt2);}
+.btn-refresh{
+  margin-top:auto;
+  border:none;
+  border-radius:10px;
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  background:var(--a-l);
+  color:var(--a);
+  transition:all var(--trans);
+}
+.btn-refresh:hover{transform:translateY(-1px);filter:brightness(.98);}
+
+.preset-executive .card-title{font-size:15px;letter-spacing:.1px;}
+.preset-executive .field-label{text-transform:none;font-size:11px;letter-spacing:.2px;}
+.preset-executive .field-hint{font-size:11px;}
+
 /* Tab pane animation */
 .tab-pane{display:none;}
 .tab-pane.active{
@@ -968,6 +1010,7 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6;}
   .tab-content{padding:20px 16px 100px;}
   .form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr 1fr;}
   .form-row.cols-2{grid-template-columns:1fr;}
+  .form-refresh-grid{grid-template-columns:1fr;}
   .summary-panel{
     top:auto;
     inset:0;
@@ -1139,6 +1182,29 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
         <button class="quick-action-chip warning" type="button" onclick="jumpToErrors()"><i class="bi bi-exclamation-circle"></i>Przejdź do błędów</button>
         <button class="quick-action-chip success" type="button" onclick="copySummaryToClipboard()"><i class="bi bi-clipboard-check"></i>Skopiuj podsumowanie</button>
       </div>
+
+      <section class="form-refresh" aria-label="Warianty odświeżonego formularza">
+        <div class="form-refresh-grid">
+          <article class="refresh-option">
+            <h3><i class="bi bi-columns-gap"></i>Wariant 1: Sprint Focus</h3>
+            <p>Priorytet i status przeniesione na górę, a sekcja odpowiedzialności uproszczona pod szybkie planowanie sprintu.</p>
+            <div class="refresh-tags"><span>Szybki start</span><span>Układ 2+1</span><span>Planowanie</span></div>
+            <button type="button" class="btn-refresh" onclick="applyFormPreset('sprint')">Włącz ten układ</button>
+          </article>
+          <article class="refresh-option">
+            <h3><i class="bi bi-person-badge"></i>Wariant 2: Stakeholder First</h3>
+            <p>Najpierw osoby odpowiedzialne i terminy, potem identyfikacja raportu. Lepsze do warsztatów biznesowych.</p>
+            <div class="refresh-tags"><span>Warsztaty</span><span>Biznes</span><span>Kontakt</span></div>
+            <button type="button" class="btn-refresh" onclick="applyFormPreset('stakeholder')">Włącz ten układ</button>
+          </article>
+          <article class="refresh-option">
+            <h3><i class="bi bi-magic"></i>Wariant 3: Executive Snapshot</h3>
+            <p>Krótsze nagłówki i bardziej zwięzłe etykiety pól. Daje kompaktowy, „zarządczy” wygląd formularza.</p>
+            <div class="refresh-tags"><span>Kompakt</span><span>Przegląd</span><span>Nowy styl</span></div>
+            <button type="button" class="btn-refresh" onclick="applyFormPreset('executive')">Włącz ten układ</button>
+          </article>
+        </div>
+      </section>
       <div class="tab-content">
 
       <!-- ══ TAB 1 ══ -->
@@ -1172,12 +1238,12 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
                 <input type="text" class="fc" id="rTitle" placeholder="np. RAPORT SPRZEDAŻY — {?Miesiąc} {?Rok}" required minlength="5" oninput="onFieldChange(this)"/>
               </div>
             </div>
-            <div class="form-row cols-3">
+            <div class="form-row cols-3" id="identityMetaRow">
               <div class="field">
                 <label class="field-label">Wersja <i class="tip-btn">?<span class="tip-popup">Semantyczna wersja raportu (SemVer: MAJOR.MINOR.PATCH). Pozwala śledzić historię zmian i robić rollback.</span></i></label>
                 <input type="text" class="fc" id="rVersion" placeholder="1.0.0" oninput="onFieldChange(this)"/>
               </div>
-              <div class="field">
+              <div class="field" data-field="status">
                 <label class="field-label">Status</label>
                 <select class="fs" id="rStatus" onchange="onFieldChange(this)">
                   <option>Szkic</option><option>Do weryfikacji</option>
@@ -1185,7 +1251,7 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
                   <option>Zarchiwizowane</option>
                 </select>
               </div>
-              <div class="field">
+              <div class="field" data-field="priority">
                 <label class="field-label">Priorytet <i class="tip-btn">?<span class="tip-popup">Wpływa na kolejność w backlogu. Krytyczny = blokuje inne procesy i wymaga natychmiastowej realizacji.</span></i></label>
                 <select class="fs" id="rPriority" onchange="onFieldChange(this)">
                   <option>— wybierz —</option><option>Krytyczny 🔴</option>
@@ -1204,7 +1270,7 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
           </div>
         </div>
 
-        <div class="card card-nth-2">
+        <div class="card card-nth-2" id="responsibilityCard">
           <div class="card-head collapsible" onclick="toggleCard(this)">
             <div class="card-ico ci-purple"><i class="bi bi-people"></i></div>
             <span class="card-title">Odpowiedzialność i terminy</span>
@@ -2401,6 +2467,44 @@ function onFieldChange(el){
   if(el && el.value && el.classList.contains('fc')){
     el.classList.add('filled');
   }
+  scheduleUpdate();
+}
+
+function applyFormPreset(type){
+  const identityMetaRow = document.getElementById('identityMetaRow');
+  const responsibilityCard = document.getElementById('responsibilityCard');
+  const tabOne = document.getElementById('t1');
+  if(!identityMetaRow || !responsibilityCard || !tabOne) return;
+
+  const statusField = identityMetaRow.querySelector('[data-field="status"]');
+  const priorityField = identityMetaRow.querySelector('[data-field="priority"]');
+
+  tabOne.classList.remove('preset-sprint','preset-stakeholder','preset-executive');
+
+  if(type === 'sprint'){
+    if(priorityField) identityMetaRow.prepend(priorityField);
+    if(statusField) identityMetaRow.prepend(statusField);
+    tabOne.classList.add('preset-sprint');
+    showToast('Włączono wariant: Sprint Focus.','success');
+  }else if(type === 'stakeholder'){
+    const firstCard = tabOne.querySelector('.card.card-nth-1');
+    if(firstCard) firstCard.insertAdjacentElement('beforebegin', responsibilityCard);
+    tabOne.classList.add('preset-stakeholder');
+    showToast('Włączono wariant: Stakeholder First.','success');
+  }else if(type === 'executive'){
+    if(priorityField) identityMetaRow.append(priorityField);
+    if(statusField) identityMetaRow.append(statusField);
+    tabOne.classList.add('preset-executive');
+    showToast('Włączono wariant: Executive Snapshot.','success');
+  }
+
+  if(type !== 'stakeholder'){
+    const cardOne = tabOne.querySelector('.card.card-nth-1');
+    if(cardOne && responsibilityCard.compareDocumentPosition(cardOne) & Node.DOCUMENT_POSITION_PRECEDING){
+      cardOne.insertAdjacentElement('afterend', responsibilityCard);
+    }
+  }
+
   scheduleUpdate();
 }
 
