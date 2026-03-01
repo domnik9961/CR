@@ -1060,11 +1060,14 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
       <button class="theme-switch-btn" id="themeDarkBtn" type="button" onclick="setTheme('dark')"><i class="bi bi-moon-stars-fill"></i><span>DARK MODE</span></button>
       <button class="theme-switch-btn" id="themeAutoBtn" type="button" onclick="setTheme('auto')"><i class="bi bi-circle-half"></i><span>AUTO PLUS</span></button>
     </div>
-    <button class="tb-btn" onclick="showToast('Zapisano szkic!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
+    <button class="tb-btn" onclick="startNewForm()"><i class="bi bi-plus-square"></i><span>Nowy</span></button>
+    <button class="tb-btn" onclick="saveFormToJson()"><i class="bi bi-download"></i><span>Zapisz JSON</span></button>
+    <button class="tb-btn" onclick="triggerJsonLoad()"><i class="bi bi-upload"></i><span>Wczytaj JSON</span></button>
     <button class="tb-btn summary-toggle-btn" id="summaryToggleBtn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="tb-btn primary" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-file-earmark-text"></i><span>Generuj dok.</span></button>
   </div>
 </nav>
+<input type="file" id="jsonImportInput" accept="application/json,.json" style="display:none" onchange="loadFormFromJsonFile(event)"/>
 
 <!-- ═══════════════ MOBILE OVERLAY ═══════════════ -->
 <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
@@ -2029,6 +2032,9 @@ body.theme-dark .global-tip{background:var(--surface-overlay);color:#e2e8f0;}
   </div>
   <div class="footer-actions">
     <button class="tb-btn" onclick="toggleSidebar()"><i class="bi bi-layout-sidebar"></i></button>
+    <button class="tb-btn" onclick="startNewForm()"><i class="bi bi-plus-square"></i><span>Nowy</span></button>
+    <button class="tb-btn" onclick="saveFormToJson()"><i class="bi bi-download"></i><span>Zapisz JSON</span></button>
+    <button class="tb-btn" onclick="triggerJsonLoad()"><i class="bi bi-upload"></i><span>Wczytaj JSON</span></button>
     <button class="tb-btn" data-summary-toggle onclick="toggleSummary()"><i class="bi bi-panel-split"></i><span>Podsumowanie</span></button>
     <button class="tb-btn" id="quickFixCta" style="display:none" onclick="topPriorityError && goToField(topPriorityError.tab, topPriorityError.fieldId)"><i class="bi bi-magic"></i><span>Przejdź i popraw</span></button>
     <button class="btn-primary" onclick="showToast('Szkic zapisany!','success')"><i class="bi bi-save"></i><span>Zapisz</span></button>
@@ -2497,6 +2503,214 @@ function escapeHtml(value){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+
+const JSON_SNAPSHOT_VERSION = '1.0.0';
+
+function triggerJsonLoad(){
+  const input = document.getElementById('jsonImportInput');
+  if(!input) return;
+  input.value = '';
+  input.click();
+}
+
+function hasMeaningfulData(snapshot){
+  const fields = snapshot?.fields || {};
+  const hasFilledField = Object.values(fields).some(value=>{
+    if(typeof value === 'boolean') return value;
+    return String(value ?? '').trim().length > 0 && String(value).trim() !== '—';
+  });
+
+  const dynamic = snapshot?.dynamic || {};
+  const hasDynamic = ['filters','subreports','customFormats']
+    .some(key=>Array.isArray(dynamic[key]) && dynamic[key].length > 0);
+
+  return hasFilledField || hasDynamic;
+}
+
+function startNewForm(){
+  const snapshot = getFormSnapshot();
+  const hasAnyData = hasMeaningfulData(snapshot);
+  if(hasAnyData && !window.confirm('Czy na pewno utworzyć nowy formularz? Niezapisane dane zostaną utracone.')) return;
+  window.location.reload();
+}
+
+function getInputKey(el){
+  if(el.id) return `id:${el.id}`;
+  if(el.name) return `name:${el.name}`;
+  return null;
+}
+
+function getFieldValue(el){
+  if(el.type === 'checkbox' || el.type === 'radio') return !!el.checked;
+  return el.value ?? '';
+}
+
+function collectNodeValues(root){
+  const out = {};
+  if(!root) return out;
+  root.querySelectorAll('input, textarea, select').forEach(el=>{
+    const key = getInputKey(el);
+    if(!key || el.type === 'file') return;
+    out[key] = getFieldValue(el);
+  });
+  return out;
+}
+
+function collectSubreportsSnapshot(){
+  return Array.from(document.querySelectorAll('#subContainer .sr-card')).map(card=>({
+    html: card.outerHTML
+  }));
+}
+
+function collectFilterGroupsSnapshot(){
+  return Array.from(document.querySelectorAll('#filterGroups .fgroup')).map(group=>({
+    html: group.outerHTML
+  }));
+}
+
+function collectCustomFormatsSnapshot(){
+  return Array.from(document.querySelectorAll('#fmtContainer .fmt-card')).map(card=>({
+    html: card.outerHTML
+  }));
+}
+
+function getFormSnapshot(){
+  return {
+    app: 'ReportForge',
+    schemaVersion: JSON_SNAPSHOT_VERSION,
+    exportedAt: new Date().toISOString(),
+    uiState: {
+      currentTab,
+      theme: localStorage.getItem('rf-theme') || 'light',
+      summaryCompact: localStorage.getItem('rf-summary-compact') === '1'
+    },
+    fields: collectNodeValues(document),
+    dynamic: {
+      filters: collectFilterGroupsSnapshot(),
+      subreports: collectSubreportsSnapshot(),
+      customFormats: collectCustomFormatsSnapshot()
+    }
+  };
+}
+
+function getFileBaseName(){
+  const reportName = (document.getElementById('rName')?.value || 'reportforge-form').trim();
+  return reportName
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '') || 'reportforge-form';
+}
+
+function saveFormToJson(){
+  const payload = getFormSnapshot();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${getFileBaseName()}-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Zapisano formularz do JSON.','success');
+}
+
+function applyValueToElement(el, value){
+  if(!el) return;
+  if(el.type === 'checkbox' || el.type === 'radio'){
+    el.checked = !!value;
+  }else{
+    el.value = value ?? '';
+  }
+}
+
+function applyFieldsFromSnapshot(fields){
+  if(!fields || typeof fields !== 'object') return 0;
+  let loaded = 0;
+  Object.entries(fields).forEach(([key, value])=>{
+    const [kind, rawSelector] = key.split(':');
+    if(!kind || !rawSelector) return;
+    let element = null;
+    if(kind === 'id'){
+      element = document.getElementById(rawSelector);
+    }else if(kind === 'name'){
+      element = document.querySelector(`[name="${CSS.escape(rawSelector)}"]`);
+    }
+    if(!element) return;
+    applyValueToElement(element, value);
+    loaded++;
+  });
+  return loaded;
+}
+
+function restoreDynamicCards(selector, items){
+  if(!Array.isArray(items)) return {loaded:0, total:0};
+  const container = document.querySelector(selector);
+  if(!container) return {loaded:0, total:items.length};
+  container.innerHTML = '';
+  let loaded = 0;
+  items.forEach(item=>{
+    if(!item || typeof item.html !== 'string') return;
+    container.insertAdjacentHTML('beforeend', item.html);
+    loaded++;
+  });
+  return {loaded, total:items.length};
+}
+
+function applySnapshot(snapshot){
+  if(!snapshot || typeof snapshot !== 'object') throw new Error('Nieprawidłowa struktura JSON.');
+
+  const loadedFields = applyFieldsFromSnapshot(snapshot.fields);
+  const totalFields = snapshot.fields && typeof snapshot.fields === 'object' ? Object.keys(snapshot.fields).length : 0;
+
+  const dynamic = snapshot.dynamic || {};
+  const filtersResult = restoreDynamicCards('#filterGroups', dynamic.filters);
+  const subreportsResult = restoreDynamicCards('#subContainer', dynamic.subreports);
+  const formatsResult = restoreDynamicCards('#fmtContainer', dynamic.customFormats);
+
+  if(!document.querySelector('#filterGroups .fgroup')) addFilterGroup();
+
+  document.querySelectorAll('tbody').forEach(tb=>renumber(tb));
+
+  if(snapshot.uiState?.theme) setTheme(snapshot.uiState.theme);
+  if(typeof snapshot.uiState?.summaryCompact === 'boolean') setSummaryCompact(snapshot.uiState.summaryCompact);
+
+  const tab = snapshot.uiState?.currentTab;
+  if(tab && document.getElementById(tab)) goTab(tab);
+
+  scheduleUpdate();
+
+  const dynamicLoaded = filtersResult.loaded + subreportsResult.loaded + formatsResult.loaded;
+  const dynamicTotal = filtersResult.total + subreportsResult.total + formatsResult.total;
+  const missingFields = Math.max(totalFields - loadedFields, 0);
+  const missingDynamic = Math.max(dynamicTotal - dynamicLoaded, 0);
+  const missingTotal = missingFields + missingDynamic;
+
+  if(missingTotal > 0){
+    showToast(`Wczytano częściowo JSON (pominięte elementy: ${missingTotal}).`,'warning');
+  }else{
+    showToast('Wczytano formularz z JSON.','success');
+  }
+}
+
+function loadFormFromJsonFile(event){
+  const file = event?.target?.files?.[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const parsed = JSON.parse(e.target?.result || '{}');
+      applySnapshot(parsed);
+    }catch(_err){
+      showToast('Nie udało się odczytać pliku JSON.','warning');
+    }
+  };
+  reader.onerror = ()=>showToast('Błąd odczytu pliku.','warning');
+  reader.readAsText(file, 'utf-8');
 }
 
 // ── COMPUTE TAB COMPLETION ──
